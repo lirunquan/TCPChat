@@ -11,8 +11,11 @@ public:
     MySql();
     void initSql();
     void createTable();
-    bool login(QString username, QString password);
-    bool signup(QString username, QString password);
+    void createDatabase();
+    int login(QString username, QString password);
+    int signup(QString username, QString password);
+private:
+    QSqlQuery *query;
 };
 
 #endif // MYSQL_H
