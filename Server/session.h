@@ -12,7 +12,14 @@ class Session : public QObject
     Q_OBJECT
 public:
     explicit Session(QObject *parent = nullptr);
-
+    void ManageJson();
+    void Login(QString username, QString password);
+    void SignUp(QString username, QString password);
+    void SendMessage(QString message);
+    void LoginSuccess();
+    void LoginFailed();
+    void SignUpSuccess();
+    void SignUpFailed();
 signals:
 
 public slots:
