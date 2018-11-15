@@ -24,6 +24,7 @@ signals:
 
 public slots:
 private:
+    QString _id;
     QTcpSocket _sokect;
 };
 
