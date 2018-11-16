@@ -1,9 +1,10 @@
 #include "tcpserver.h"
 #include "mysql.h"
+#include <QUuid>
 
-TCPServer::TCPServer()
+TCPServer::TCPServer(QObject* parent):QTcpServer(parent)
 {
-
+    connect(this, SIGNAL(newConnection()), this, SLOT());
 }
 TCPServer::~TCPServer()
 {}

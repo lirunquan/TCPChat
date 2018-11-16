@@ -18,10 +18,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp \
     tcpserver.cpp \
-    mysql.cpp \
-    session.cpp
+    mysql.cpp
 
 HEADERS += \
     tcpserver.h \
-    mysql.h \
-    session.h
+    mysql.h
