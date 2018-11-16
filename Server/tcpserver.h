@@ -5,6 +5,7 @@
 #include <QTcpServer>
 #include <QtNetwork>
 #include <memory>
+#include <QAbstractSocket>
 
 class TCPServer : public QObject
 {
@@ -17,6 +18,7 @@ private slots:
     bool start(uint16_t port);
     void stop();
     void acceptConnection();
+    void onError(QAbstractSocket::SocketError);
 private:
     QTcpServer* tcpServer;
     QTcpSocket* tcpsocket;
