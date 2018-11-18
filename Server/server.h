@@ -20,13 +20,14 @@ public:
     void handleMessage(QString m_name, QTcpSocket* socket);
     void userStateUpdate();
     void saveToFile();
+    void logOutput(QString log);
 signals:
 
 public slots:
 
 private:
     QTcpServer* tcpServer;
-    QTcpSocket* tcpSocket;
+    QTcpSocket* tcpSocket[M];
     QTimer timer;
 };
 
