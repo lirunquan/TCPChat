@@ -35,7 +35,109 @@ Server::Server(QObject *parent) : QObject(parent)
     isFirst = true;
     userLoaded();
     userStateUpdate();
+    QTime t = QTime::currentTime();
+    qsrand(t.msec() + t.second()*1000);
+    QString localHostName = QHostInfo::localHostName();
+    logOutput(QString("local host name: %1").arg(localHostName));
+    QHostInfo info = QHostInfo::fromName(localHostName);
+    foreach (QHostAddress address, info.addresses()) {
+        if(address.protocol() == QAbstractSocket::IPv4Protocol){
+            logOutput(address.toString());
+        }
+    }
+    for(int i=0; i<M; i++){
+        tcpSocket[i] = new QTcpSocket(this);
+    }
+    tcpServer = new QTcpServer(this);
+    this->start(tcpServer, 8800);
+    connect(tcpServer, &QTcpServer::newConnection, [=](){
+        int index = cur;
+        tcpSocket[index] = tcpServer->nextPendingConnection();
+        cur ++;
+        QString ip = tcpSocket[index]->peerAddress().toString().section(":", 3,3);
+        quint16 port = tcpSocket[index]->peerPort();
+        logOutput(QString("[%1-%2] is connected successfully.").arg(ip).arg(port));
+        connect(tcpSocket[index], &QTcpSocket::connected, [=](){
 
+        });
+        connect(tcpSocket[index], &QTcpSocket::disconnected, [=](){
+            logOutput(QString("[%1-%2] is disconnected.").arg(ip).arg(port));
+            for(int i=0;i<User_data->size;i++){
+                if(User_data->u[i]->ipAdd == ip){
+                    logOutput(QString("%1 is disconnected.").arg(User_data->u[i]->username));
+                    User_data->u[i]->online_state = 0;
+                    break;
+                }
+            }
+            if(index < cur-1){
+                for(int i=index; i<cur-1; i++){
+                    tcpSocket[i] = tcpSocket[i+1];
+                }
+            }
+            cur --;
+            userStateUpdate();
+        });
+        connect(tcpSocket[index], &QTcpSocket::readyRead, [=](){
+            QByteArray buffer = tcpSocket[index]->readAll();
+            if(mode[index] == AcceptLogin){
+                if("login" == QString(buffer).section("##", 0 ,0)){
+                    logOutput("login");
+                    bool isPass = false;
+                    for(int i=0; i<User_data->size; i++){
+                        if(User_data->u[i]->username == QString(buffer).section("##", 1, 1) &&
+                                User_data->u[i]->password == QString(buffer).section("##", 2,2)){
+                            isPass = true;
+                            logOutput(QString("%1 is connected successfully.").arg(User_data->u[i]->username));
+                            User_data->u[i]->online_state = 1;
+                            User_data->u[i]->ipAdd = ip;
+                            User_data->u[i]->port = qrand()%10000+10000;
+                            break;
+                        }
+                    }
+                    if(isPass){
+                        tcpSocket[index]->write(QString("##login success##%1").arg(QString(buffer).section("##",1,1)).toUtf8());
+                        logOutput(QString("%1 login success").arg(QString(buffer).section("##",1,1)));
+                    }
+                    else{
+                        tcpSocket[index]->write(QString("##login failed##%1").arg(QString(buffer).section("##",1,1)).toUtf8());
+                        logOutput(QString("%1 login failed").arg(QString(buffer).section("##",1,1)));
+                    }
+                }
+                else if("register" == QString(buffer).section("##",0,0)){
+                    logOutput("register");
+                    QString m_name = QString(buffer).section("##",1,1);
+                    QString m_password = QString(buffer).section("##",2,2);
+                    QString m_question = QString(buffer).section("##",3,3);
+                    QString m_answer = QString(buffer).section("##",4,4);
+                    bool isRegistered = false;
+                    for(int i=0; i<User_data->size; i++){
+                        if(User_data->u[i]->username == m_name){
+                            isRegistered = true;
+                            break;
+                        }
+                    }
+                    if(!isRegistered){
+                        int newPort = qrand()%10000+10000;
+                        User_data->u[User_data->size] = new User(m_name, m_password, m_question, m_answer, 1, ip, newPort);
+                        User_data->size ++ ;
+                        tcpSocket[index]->write(QString("##register success##%1").arg(m_name).toUtf8());
+                        saveToFile();
+                        logOutput(QString("%1 register success").arg(m_name));
+                    }
+                    else{
+                        tcpSocket[index]->write(QString("##register failed##%1 is already used").arg(m_name).toUtf8());
+                        logOutput(QString("failed: %1 is already used").arg(m_name));
+                    }
+                }
+                else if()
+            }
+        })
+    });
+}
+void Server::start(QTcpServer tcp, uint16_t port)
+{
+    logOutput(QString("server port: %1").arg(port));
+    tcp.listen(QHostAddress::Any, port);
 }
 void Server::userLoaded()
 {

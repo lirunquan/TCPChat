@@ -18,6 +18,7 @@ public:
     ~Server();
     void userLoaded();
     void handleMessage(QString m_name, QTcpSocket* socket);
+    void start(QTcpServer tcp, uint16_t port);
     void userStateUpdate();
     void saveToFile();
     void logOutput(QString log);
