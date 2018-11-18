@@ -127,6 +127,7 @@ Server::Server(QObject *parent) : QObject(parent)
                     else{
                         tcpSocket[index]->write(QString("##register failed##%1 is already used").arg(m_name).toUtf8());
                         logOutput(QString("failed: %1 is already used").arg(m_name));
+                        mode[index] = Chat;
                     }
                 }
                 else if()
