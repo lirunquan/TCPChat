@@ -27,6 +27,7 @@ Server::Server(QObject *parent) : QObject(parent)
 Server::~Server(){}
 void Server::init()
 {
+    logOutput("init server");
     User_data = new user_data();
     for(int i=0;i<M;i++){
         User_data->u[i] = NULL;
@@ -230,7 +231,7 @@ void Server::userLoaded()
 {
     QFile userFile("Chat.txt");
     logOutput("load data from file.");
-    if(userFile.open(QIODevice::ReadOnly|QIODevice::Text)){
+    if(userFile.open(QIODevice::ReadWrite|QIODevice::Text)){
         QByteArray a = QByteArray::fromBase64(userFile.readAll());
         QString str = QString(a);
         QTextStream input(&str);
