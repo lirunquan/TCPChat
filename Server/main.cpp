@@ -12,5 +12,6 @@ int main(int argc, char *argv[])
     auro dir = QDir(QDir::currentPath());
 #endif
     Server server(&a);
+    server.init();
     return a.exec();
 }

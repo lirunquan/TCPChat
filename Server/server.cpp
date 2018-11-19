@@ -23,6 +23,10 @@ int indexOf;
 
 Server::Server(QObject *parent) : QObject(parent)
 {
+
+}
+void Server::init()
+{
     User_data = new user_data();
     for(int i=0;i<M;i++){
         User_data->u[i] = NULL;
@@ -130,9 +134,91 @@ Server::Server(QObject *parent) : QObject(parent)
                         mode[index] = Chat;
                     }
                 }
-                else if()
+                else if("find" == QString(buffer).section("##",0,0)){
+                    logOutput("find");
+                    QString findName = QString(buffer).section("##",1,1);
+                    bool isReturn = false;
+                    for(int i=0;i<User_data->size; i++){
+                        if(User_data->u[i]->username == findName){
+                            indexOf = i;
+                            isReturn = true;
+                            tcpSocket[index]->write(QString("##question##%1").arg(User_data->u[i]->question).toUtf8());
+                            logOutput(QString("%1's question").arg(findName));
+                        }
+                    }
+                    if(!isReturn){
+                        tcpSocket[index]->write(QString("user %1 does not exist").arg(findName).toUtf8());
+                        mode[index] = Chat;
+                    }
+                }
+                else if("answer" == QString(buffer).section("##",0,0)){
+                    QString answer = QString(buffer).section("##",1,1);
+                    if(User_data->u[indexOf]->answer == answer){
+                        logOutput(QString("user %1 find correctly, is online now").arg(User_data->u[indexOf]->username));
+                        User_data->u[indexOf]->online_state = 1;
+                        User_data->u[indexOf]->ipAdd = ip;
+                        User_data->u[indexOf]->port = qrand()%10000+10000;
+                        tcpSocket[index]->write(QString("##answer is right##%1##%2").arg(User_data->u[indexOf]->username).arg(User_data->u[indexOf]->password).toUtf8());
+                    }
+                    else{
+                        tcpSocket[index]->write("the answer is wrong");
+                        mode[index] = Chat;
+                    }
+                }
+                else if("##requestForUserInfo" == QString(buffer)){
+                    userStateUpdate();
+                    saveToFile();
+                }
+                else if("Offline message" == QString(buffer).section("##",0,0)){
+                    logOutput("send offline message");
+                    handleMessage(QString(buffer).section("##", 1,1), tcpSocket[index]);
+                    mode[index] = Chat;
+                }
+                else{
+                    logOutput("wrong request");
+                    tcpSocket[index]->disconnectFromHost();
+                    mode[index] = Chat;
+                }
             }
-        })
+            else if(mode[index] == Chat){
+                if("##Request for login" == QString(buffer)){
+                    logOutput("Request for login");
+                    tcpSocket[index]->write("##Permission for login");
+                    mode[index] = AcceptLogin;
+                }
+                else{
+                    QString s = "common message"+QString(buffer);
+                    logOutput(s);
+                    QString reciever = QString(buffer).section("##", 2,2);
+                    for(int i=0;i<User_data->size; i++){
+                        logOutput(QString("%1 %2 %3").arg(i).arg(User_data->size).arg(User_data->u[i]->username));
+                        if(reciever == User_data->u[i]->username){
+                            if(User_data->u[i]->online_state == 1){
+                                for(int j=0; j<cur; j++){
+                                    if(tcpSocket[j]->peerAddress().toString().section(":",3,3) == User_data->u[i]->ipAdd){
+                                        tcpSocket[j]->write(buffer);
+                                        break;
+                                    }
+                                }
+                            }
+                            else{
+                                MessageQueue* s = Message;
+                                if(Message == NULL){
+                                    Message = new MessageQueue(QString(buffer), QString(buffer).section("##",2,2));
+                                }
+                                else{
+                                    while(s->next != NULL){
+                                        s = s->next;
+                                    }
+                                    s->next = new MessageQueue(QString(buffer), QString(buffer).section("##",2,2));
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        });
     });
 }
 void Server::start(QTcpServer tcp, uint16_t port)

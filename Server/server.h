@@ -16,6 +16,7 @@ class Server : public QObject
 public:
     explicit Server(QObject *parent = nullptr);
     ~Server();
+    void init();
     void userLoaded();
     void handleMessage(QString m_name, QTcpSocket* socket);
     void start(QTcpServer tcp, uint16_t port);
