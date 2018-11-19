@@ -32,7 +32,7 @@ void Server::init()
     User_data = new user_data();
     for(int i=0;i<M;i++){
         User_data->u[i] = NULL;
-        mode[i] = AcceptLogin;
+        mode[i] = Chat;
     }
     indexOf = 0;
     User_data->size = 0;
