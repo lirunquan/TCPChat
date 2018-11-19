@@ -23,8 +23,8 @@ int indexOf;
 
 Server::Server(QObject *parent) : QObject(parent)
 {
-
 }
+Server::~Server(){}
 void Server::init()
 {
     User_data = new user_data();
@@ -221,10 +221,10 @@ void Server::init()
         });
     });
 }
-void Server::start(QTcpServer tcp, uint16_t port)
+void Server::start(QTcpServer* tcp, int port)
 {
     logOutput(QString("server port: %1").arg(port));
-    tcp.listen(QHostAddress::Any, port);
+    tcp->listen(QHostAddress::Any, port);
 }
 void Server::userLoaded()
 {

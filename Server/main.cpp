@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 #ifdef _DEBUG
     auto dir = QDir(QCoreApplication::applicationDirPath());
 #else
-    auro dir = QDir(QDir::currentPath());
+    auto dir = QDir(QDir::currentPath());
 #endif
     Server server(&a);
     server.init();
