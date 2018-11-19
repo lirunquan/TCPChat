@@ -26,3 +26,17 @@ yyyy.MM.dd 21:42:06.594 ddd:Online user: 0, Offline user: 0
 yyyy.MM.dd 21:42:06.595 ddd:local host name: ronghui-ThinkPad-S2
 yyyy.MM.dd 21:42:06.595 ddd:127.0.1.1
 yyyy.MM.dd 21:42:06.595 ddd:server port: 8800
+yyyy.MM.dd 23:20:46.322 ddd:init server
+yyyy.MM.dd 23:20:46.323 ddd:load data from file.
+yyyy.MM.dd 23:20:46.323 ddd:Update user State, now the count of Users: 0
+yyyy.MM.dd 23:20:46.323 ddd:Online user: 0, Offline user: 0
+yyyy.MM.dd 23:20:46.324 ddd:local host name: ronghui-ThinkPad-S2
+yyyy.MM.dd 23:20:46.327 ddd:127.0.1.1
+yyyy.MM.dd 23:20:46.328 ddd:server port: 8800
+yyyy.MM.dd 23:20:51.623 ddd:init server
+yyyy.MM.dd 23:20:51.624 ddd:load data from file.
+yyyy.MM.dd 23:20:51.624 ddd:Update user State, now the count of Users: 0
+yyyy.MM.dd 23:20:51.625 ddd:Online user: 0, Offline user: 0
+yyyy.MM.dd 23:20:51.625 ddd:local host name: ronghui-ThinkPad-S2
+yyyy.MM.dd 23:20:51.627 ddd:127.0.1.1
+yyyy.MM.dd 23:20:51.627 ddd:server port: 8800
