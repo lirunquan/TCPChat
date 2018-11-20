@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "user.h"
+#include <QMessageBox>
+#include <QTextStream>
 
 const int time_out = 1000;//longest waiting time;
 const int M = 20;//max size of users;
@@ -31,6 +33,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    for(int i=0; i<M; i++){
+        user[i] = NULL;
+    }
+    m_size = 0;
+    mode[0] = Chat; mode[1] = Chat;
+    isOffline = true;
+
+    timer = new QTimer();
+    connect(timer, &QTimer::timeout, [=](){
+        QMessageBox::information(this, "Error", "Connect Failed!", QMessageBox::Yes);
+        timer->stop();
+    });
+
 }
 
 MainWindow::~MainWindow()
