@@ -25,6 +25,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void logOutput(QString log);
+    void sendMessage(QString sender, QString reciever, QString message);
 private:
     Ui::MainWindow *ui;
     QTcpServer* tcpServer;

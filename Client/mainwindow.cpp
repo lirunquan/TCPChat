@@ -43,9 +43,45 @@ MainWindow::MainWindow(QWidget *parent) :
     timer = new QTimer();
     connect(timer, &QTimer::timeout, [=](){
         QMessageBox::information(this, "Error", "Connect Failed!", QMessageBox::Yes);
+        logOutput("Error: Connect Failed.");
         timer->stop();
     });
+    tcpSocket = new QTcpSocket(this);
+    tcpServer = new QTcpServer(this);
+    tcpSocket_client = new QTcpSocket(this);
+    tcpSocket->connectToHost(QHostAddress(IP), PORT);
+    tcpSocket->write("##Request for login");//send tcp connect request for login
+    timer->start(time_out);
+    logOutput("Requset for login");
+    connect(tcpSocket, &QTcpSocket::readyRead, [=](){
+        QByteArray buffer = tcpSocket->readAll();
+        if(mode[0] == Chat){
+            if(!isFind){
+                if("##Permission for login" == QString(buffer)){
+                    //get the permission for login, open the login window
+                    timer->stop();
+                    isQuestionReturn = false;
+                    logOutput("Ready to login");
+                    //requestString = QString("login##%1##%2").arg(username).arg(password);
+                    //username and password is what user inputed
+                    if(requestString != ""){
+                        tcpSocket->write(requestString.toUtf8());
+                        mode[0] = Login;
+                    }
+                    else{
+                        tcpSocket->write("login failed");
+                        logOutput("login failed");
+                    }
+                }
+                else if("login success" == QString(buffer).section("##",1,1)){
+                    //login success, open the chat window
+                    tcpSocket->write("##RequsetForUserInfo");
+                    mode[0] = Chat;
 
+                }
+            }
+        }
+    });
 }
 
 MainWindow::~MainWindow()
@@ -86,4 +122,10 @@ void MainWindow::logOutput(QString log)
         output << current << log << "\n";
     }
     logFile.close();
+}
+void MainWindow::sendMessage(QString sender, QString reciever, QString message)
+{
+    QString sending = sender.append(QString("##%1##").arg(message)).append(reciever);
+    tcpSocket->write(sending.toUtf8());
+    logOutput(QString("Sending common message to %1").arg(reciever));
 }
