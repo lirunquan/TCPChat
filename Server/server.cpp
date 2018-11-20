@@ -167,7 +167,7 @@ void Server::init()
                         mode[index] = Chat;
                     }
                 }
-                else if("##requestForUserInfo" == QString(buffer)){
+                else if("##RequestForUserInfo" == QString(buffer)){
                     userStateUpdate();
                     saveToFile();
                 }
