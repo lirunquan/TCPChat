@@ -59,6 +59,10 @@ MainWindow::MainWindow(QWidget *parent) :
         isOffline = false;
         mode[0] = Chat;
     });
+    connect(tcpSocket, &QTcpSocket::disconnected, [=](){
+        //window operation for disconnection
+        requestString.clear();
+    });
     connect(tcpSocket, &QTcpSocket::readyRead, [=](){
         QByteArray buffer = tcpSocket->readAll();
         if(mode[0] == Chat){
