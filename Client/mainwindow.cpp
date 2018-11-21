@@ -129,6 +129,7 @@ void MainWindow::logOutput(QString log)
     QFile logFile("log.txt");
     if(logFile.open(QIODevice::WriteOnly|QIODevice::Append)){
         QTextStream output(&logFile);
+        qDebug() << current << log << "\n";
         output << current << log << "\n";
     }
     logFile.close();
