@@ -17,7 +17,7 @@ User* user[M];
 
 int m_size;
 int mode[2];
-int sendOrReceiver;//send:1,reciever:-1
+bool sendOrReceiver;//send:true, reciever:false
 
 bool isFind = false;
 bool isQuestionReturn, isOffline, isSet;
@@ -53,6 +53,12 @@ MainWindow::MainWindow(QWidget *parent) :
     tcpSocket->write("##Request for login");//send tcp connect request for login
     timer->start(time_out);
     logOutput("Requset for login");
+    connect(tcpSocket, &QTcpSocket::connected, [=](){
+        //tips for connected success
+        logOutput("connected success");
+        isOffline = false;
+        mode[0] = Chat;
+    });
     connect(tcpSocket, &QTcpSocket::readyRead, [=](){
         QByteArray buffer = tcpSocket->readAll();
         if(mode[0] == Chat){
@@ -128,4 +134,15 @@ void MainWindow::sendMessage(QString sender, QString reciever, QString message)
     QString sending = sender.append(QString("##%1##").arg(message)).append(reciever);
     tcpSocket->write(sending.toUtf8());
     logOutput(QString("Sending common message to %1").arg(reciever));
+}
+void MainWindow::exit()
+{
+    for(int i=0; i<m_size; i++){
+        delete user[i];
+        user[i] = NULL;
+    }//clear all the users
+    m_size = 0;
+    if(tcpSocket->isOpen()){
+        tcpSocket->disconnectFromHost();//disconnect the connection to server
+    }
 }

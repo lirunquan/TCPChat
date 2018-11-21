@@ -26,6 +26,7 @@ public:
     ~MainWindow();
     void logOutput(QString log);
     void sendMessage(QString sender, QString reciever, QString message);
+    void exit();
 private:
     Ui::MainWindow *ui;
     QTcpServer* tcpServer;
