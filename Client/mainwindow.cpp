@@ -87,8 +87,19 @@ MainWindow::MainWindow(QWidget *parent) :
                     //login success, open the chat window
                     tcpSocket->write("##RequsetForUserInfo");
                     mode[0] = Chat;
-
                 }
+                else if("register success" == QString(buffer).section("##",1,1)){
+                    //window hints the infomation
+                    tcpSocket->write("##RequestForUserInfo");
+                    mode[0] = Chat;
+                }
+            }
+            else if("question" == QString(buffer).section("##",1,1)){
+                m_ques = QString(buffer).section("##",2,2);
+                //window change into finding password, change the m_answer
+                //m_answ = QString("answer##%1").arg(what user input);
+                tcpSocket->write(m_answ.toUtf8());
+                isQuestionReturn = true;
             }
         }
     });
@@ -136,9 +147,19 @@ void MainWindow::logOutput(QString log)
 }
 void MainWindow::sendMessage(QString sender, QString reciever, QString message)
 {
-    QString sending = sender.append(QString("##%1##").arg(message)).append(reciever);
-    tcpSocket->write(sending.toUtf8());
+    requestString = sender.append(QString("##%1##").arg(message)).append(reciever);
+//    tcpSocket->write(sending.toUtf8());
     logOutput(QString("Sending common message to %1").arg(reciever));
+}
+void MainWindow::userLogin(QString username, QString password)
+{
+    requestString = QString("login##%1##%2").arg(username).arg(password);
+    logOutput(requestString);
+}
+void MainWindow::userRegister(QString username, QString password, QString question, QString answer)
+{
+    requestString = QString("register##%1##%2##%3##%4").arg(username).arg(password).arg(question).arg(answer);
+    logOutput(requestString);
 }
 void MainWindow::exit()
 {

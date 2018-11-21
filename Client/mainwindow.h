@@ -26,6 +26,8 @@ public:
     ~MainWindow();
     void logOutput(QString log);
     void sendMessage(QString sender, QString reciever, QString message);
+    void userRegister(QString username, QString password, QString question, QString answer);
+    void userLogin(QString username, QString password);
     void exit();
 private:
     Ui::MainWindow *ui;
