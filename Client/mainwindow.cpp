@@ -133,7 +133,16 @@ MainWindow::MainWindow(QWidget *parent) :
                     }
                 }
             }
+            else{
+                //hints no other users;
+            }
+            if(!isOffline){
+                isOffline = true;
+                tcpSocket->write(QString("##Offline message##%1").arg(m_name).toUtf8());
+                logOutput("send offline message.");
+            }
         }
+//        else if()
     });
 }
 
@@ -179,8 +188,8 @@ void MainWindow::logOutput(QString log)
 }
 void MainWindow::sendMessage(QString sender, QString reciever, QString message)
 {
-    requestString = sender.append(QString("##%1##").arg(message)).append(reciever);
-//    tcpSocket->write(sending.toUtf8());
+    QString sending = sender.append(QString("##%1##").arg(message)).append(reciever);
+    tcpSocket->write(sending.toUtf8());
     logOutput(QString("Sending common message to %1").arg(reciever));
 }
 void MainWindow::userLogin(QString username, QString password)
