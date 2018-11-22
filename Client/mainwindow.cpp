@@ -65,25 +65,9 @@ MainWindow::MainWindow(QWidget *parent) :
     });
     connect(tcpSocket, &QTcpSocket::readyRead, [=](){
         QByteArray buffer = tcpSocket->readAll();
-        if(mode[0] == Chat){
-            if(!isFind){
-                if("##Permission for login" == QString(buffer)){
-                    //get the permission for login, open the login window
-                    timer->stop();
-                    isQuestionReturn = false;
-                    logOutput("Ready to login");
-                    //requestString = QString("login##%1##%2").arg(username).arg(password);
-                    //username and password is what user inputed
-                    if(requestString != ""){
-                        tcpSocket->write(requestString.toUtf8());
-                        mode[0] = Login;
-                    }
-                    else{
-                        tcpSocket->write("login failed");
-                        logOutput("login failed");
-                    }
-                }
-                else if("login success" == QString(buffer).section("##",1,1)){
+        if(mode[0] == Login){
+            if(!isFind){                
+                if("login success" == QString(buffer).section("##",1,1)){
                     //login success, open the chat window
                     tcpSocket->write("##RequsetForUserInfo");
                     mode[0] = Chat;
@@ -93,13 +77,61 @@ MainWindow::MainWindow(QWidget *parent) :
                     tcpSocket->write("##RequestForUserInfo");
                     mode[0] = Chat;
                 }
+                else{
+                    //window hints the "login/register failed"
+                }
             }
             else if("question" == QString(buffer).section("##",1,1)){
                 m_ques = QString(buffer).section("##",2,2);
                 //window change into finding password, change the m_answer
                 //m_answ = QString("answer##%1").arg(what user input);
+                //m_answ.append(newpassword);
                 tcpSocket->write(m_answ.toUtf8());
                 isQuestionReturn = true;
+            }
+            else if("answer is right" == QString(buffer).section("##",1,1)){
+                //hints the login infomation
+                //user has login
+                //password has changed into the new one
+                tcpSocket->write("##RequestForUserInfo");
+                mode[0] = Chat;
+            }
+            else{
+                tcpSocket->write("wrong request");
+                logOutput(QString(buffer));
+                logOutput("something wrong");
+            }
+        }
+        else if("load users' state" == QString(buffer).section("##",0,0)){
+            for(int i=0; i<M; i++){
+                user[i] = NULL;
+            }
+            m_size = 0;
+            //window clears the list of users
+            m_size = QString(buffer).section("##",1,1).toInt();
+            if(m_size > 0){
+                QString userInfo = QString(buffer).section("##",2,2);
+                logOutput(userInfo);
+                QTextStream info(&userInfo);
+                int num_on = 0, num_off = 0;
+                for(int i=0; i<m_size; i++){
+                    QString u_name, u_ip;
+                    int u_port, u_state;
+                    info >> u_name;
+                    info >> u_state;
+                    info >> u_ip;
+                    info >> u_port;
+                    User* u_new = new User(u_name, u_state, u_ip, u_port);
+                    user[i] = u_new;
+                    if(u_state == 1){
+                        //users' list add an online user
+                        num_on ++;
+                    }
+                    else{
+                        //users' list add an offline user
+                        num_off ++;
+                    }
+                }
             }
         }
     });

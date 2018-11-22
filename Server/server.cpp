@@ -157,10 +157,13 @@ void Server::init()
                     QString answer = QString(buffer).section("##",1,1);
                     if(User_data->u[indexOf]->answer == answer){
                         logOutput(QString("user %1 find correctly, is online now").arg(User_data->u[indexOf]->username));
+                        QString new_pass = QString(buffer).section("##",2,2);
+                        User_data->u[indexOf]->password = new_pass;
                         User_data->u[indexOf]->online_state = 1;
                         User_data->u[indexOf]->ipAdd = ip;
                         User_data->u[indexOf]->port = qrand()%10000+10000;
-                        tcpSocket[index]->write(QString("##answer is right##%1##%2").arg(User_data->u[indexOf]->username).arg(User_data->u[indexOf]->password).toUtf8());
+                        tcpSocket[index]->write(QString("##answer is right##%1").arg(User_data->u[indexOf]->username);/*.arg(User_data->u[indexOf]->password).toUtf8())*/
+                        saveToFile();
                     }
                     else{
                         tcpSocket[index]->write("the answer is wrong");
@@ -269,7 +272,7 @@ void Server::userStateUpdate()
     logOutput(s);
     int num_on = 0;
     int num_off = 0;
-    QString update = QString("load users states##%1##").arg(User_data->size);
+    QString update = QString("load users' states##%1##").arg(User_data->size);
     for(int i=0;i<User_data->size; i++){
         update = update.append(User_data->u[i]->toString());
         if(User_data->u[i]->online_state == 1){
@@ -288,6 +291,7 @@ void Server::userStateUpdate()
         for(int i=0; i<M; i++){
             if(tcpSocket[i]->isOpen()){
                 s = QString("Send current index of user to current client: %1").arg(i);
+                logOutput(s);
                 tcpSocket[i]->write(update.toUtf8());
             }
             else{
