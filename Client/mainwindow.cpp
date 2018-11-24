@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_size = 0;
     mode[0] = Chat; mode[1] = Chat;
     isOffline = true;
-
+    port_num = 7777;
     timer = new QTimer();
     connect(timer, &QTimer::timeout, [=](){
         QMessageBox::information(this, "Error", "Connect Failed!", QMessageBox::Yes);
@@ -53,6 +53,18 @@ MainWindow::MainWindow(QWidget *parent) :
     tcpSocket->write("##Request for login");//send tcp connect request for login
     timer->start(time_out);
     logOutput("Requset for login");
+    connect(tcpServer, &QTcpServer::newConnection, [=](){
+
+    });
+    connect(tcpSocket_client, &QTcpSocket::connected, [=](){
+
+    });
+    connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
+
+    });
+    connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
+
+    });
     connect(tcpSocket, &QTcpSocket::connected, [=](){
         //tips for connected success
         logOutput("connected success");
@@ -84,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
             else if("question" == QString(buffer).section("##",1,1)){
                 m_ques = QString(buffer).section("##",2,2);
                 //window change into finding password, change the m_answer
-                //m_answ = QString("answer##%1").arg(what user input);
+                //m_answ = QString("answer##%1##").arg(what user input);
                 //m_answ.append(newpassword);
                 tcpSocket->write(m_answ.toUtf8());
                 isQuestionReturn = true;
@@ -100,6 +112,16 @@ MainWindow::MainWindow(QWidget *parent) :
                 tcpSocket->write("wrong request");
                 logOutput(QString(buffer));
                 logOutput("something wrong");
+            }
+        }
+        else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
+            if(m_name != QString(buffer).section("##",2,2)){
+                //show wrong request message in the window
+            }
+            else{
+                QString c_sender = QString(buffer).section("##",0,0);
+                //show contact sender in the window
+                tcpSocket->write(QString("%1##AcceptContact##%2").arg(m_name).arg(c_sender).toUtf8());
             }
         }
         else if("load users' state" == QString(buffer).section("##",0,0)){
@@ -123,6 +145,12 @@ MainWindow::MainWindow(QWidget *parent) :
                     info >> u_port;
                     User* u_new = new User(u_name, u_state, u_ip, u_port);
                     user[i] = u_new;
+                    if(!isSet && u_name == m_name){
+                        setWindowTitle(QString("%1 %2:%3").arg(u_name).arg(u_ip).arg(u_port));
+                        port_num = u_port;
+                        tcpServer->listen(QHostAddress::Any, port_num);
+                        isSet = true;
+                    }
                     if(u_state == 1){
                         //users' list add an online user
                         num_on ++;
@@ -135,6 +163,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             else{
                 //hints no other users;
+                logOutput("no user in the server.");
             }
             if(!isOffline){
                 isOffline = true;
@@ -142,7 +171,34 @@ MainWindow::MainWindow(QWidget *parent) :
                 logOutput("send offline message.");
             }
         }
-//        else if()
+        else if("offline message" == QString(buffer).section("&&",0,0)){//handle offline message
+            int num = QString(buffer).section("&&",1,1).toInt();//number of offline message
+            for(int m=0; m<num+2; m++){
+                QString single = QString(buffer).section("&&",m,m);
+                QString sender = QString(single).section("##",0,0);//who sended
+                QString message_off = QString(single).section("##",1,1);//content of message
+                QString reciever = QString(single).section("##",2,2);//who will recieve
+                //show the message in the window
+            }
+        }
+        else if("##Permission for login" == QString(buffer)){
+            timer->stop();
+            //window change into login
+            if(requestString != ""){
+                tcpSocket->write(requestString.toUtf8());
+                mode[0] = Login;
+            }
+            else{
+                logOutput("request string is empty.");
+            }
+        }
+        else{
+            //handle common message, sending "A##message##B" means A sends message to B
+            QString sender = QString(buffer).section("##",0,0);
+            QString m_common = QString(buffer).section("##",1,1);
+            QString reciever = QString(buffer).section("##",2,2);
+            //show message in the window
+        }
     });
 }
 
