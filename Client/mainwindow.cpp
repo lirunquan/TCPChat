@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "user.h"
+#include "filetransmit.h"
 #include <QMessageBox>
 #include <QTextStream>
 #include <QtNetwork>
@@ -93,6 +94,8 @@ MainWindow::MainWindow(QWidget *parent) :
                         logOutput("accept sending");
                         sendOrReceiver = false;
                         //show dialog of sending file
+                        FileTransmit *dialogRecv = new FileTransmit(this);
+                        dialogRecv->show();
                     }
                     else{
                         tcpSocket_client->write("##RefuseSending");
@@ -303,6 +306,11 @@ void MainWindow::sendMessage(QString sender, QString reciever, QString message)
     QString sending = sender.append(QString("##%1##").arg(message)).append(reciever);
     tcpSocket->write(sending.toUtf8());
     logOutput(QString("Sending common message to %1").arg(reciever));
+}
+void MainWindow::sendFile()
+{
+    tcpSocket_client->write("##RequestForSendingFile");
+
 }
 void MainWindow::userLogin(QString username, QString password)
 {

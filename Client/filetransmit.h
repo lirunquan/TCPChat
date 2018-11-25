@@ -18,7 +18,10 @@ class FileTransmit : public QDialog
 public:
     explicit FileTransmit(QWidget *parent = 0);
     ~FileTransmit();
-
+private slots:
+    void readData_send();
+    void readData_recv();
+    void sendData();
 private:
     Ui::FileTransmit *ui;
     QUdpSocket* udpSocketServer;

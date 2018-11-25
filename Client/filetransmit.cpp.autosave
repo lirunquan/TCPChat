@@ -60,3 +60,11 @@ FileTransmit::~FileTransmit()
          }
      }
  }
+void FileTransmit::readData_recv()
+{
+    
+}
+void FileTransmit::readData_send()
+{
+    
+}
