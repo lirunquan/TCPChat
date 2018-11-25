@@ -60,7 +60,6 @@ void Server::init()
         int index = cur;
         tcpSocket[index] = tcpServer->nextPendingConnection();
         cur ++;
-        mode[index] = Chat;
         QString ip = tcpSocket[index]->peerAddress().toString().section(":", 3,3);
         quint16 port = tcpSocket[index]->peerPort();
         logOutput(QString("[%1-%2] is connected successfully.").arg(ip).arg(port));
@@ -85,6 +84,11 @@ void Server::init()
         });
         connect(tcpSocket[index], &QTcpSocket::readyRead, [=](){
             QByteArray buffer = tcpSocket[index]->readAll();
+            logOutput(buffer);
+            if("##ChatMode" == QString(buffer)){
+                mode[index] = Chat;
+                tcpSocket[index]->write("##ChatMode, waiting request");
+            }
             if(mode[index] == AcceptLogin){
                 if("login" == QString(buffer).section("##", 0 ,0)){
                     logOutput("login");
@@ -186,7 +190,7 @@ void Server::init()
                     mode[index] = Chat;
                 }
             }
-            if(mode[index] == Chat){
+            else if(mode[index] == Chat){
                 if("##Request for login" == QString(buffer)){
                     logOutput("Request for login");
                     tcpSocket[index]->write("##Permission for login");
