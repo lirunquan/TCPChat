@@ -64,7 +64,7 @@ void Server::init()
         quint16 port = tcpSocket[index]->peerPort();
         logOutput(QString("[%1-%2] is connected successfully.").arg(ip).arg(port));
         connect(tcpSocket[index], &QTcpSocket::connected, [=](){
-
+            mode[index] = Chat;
         });
         connect(tcpSocket[index], &QTcpSocket::disconnected, [=](){
             logOutput(QString("[%1-%2] is disconnected.").arg(ip).arg(port));
