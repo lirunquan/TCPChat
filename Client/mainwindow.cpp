@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent) :
                     sendOrReceiver = true;
                 }
                 else if("##RefuseSending" == QString(buffer)){
-
+                    QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
                 }
             }
         });
@@ -118,7 +118,29 @@ MainWindow::MainWindow(QWidget *parent) :
         ip_recv.clear();
     });
     connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
-
+        QString buffer = tcpSocket_client->readAll();
+        logOutput(buffer);
+        if(mode[1] == Chat){
+            if("##RequestForSendingFile" == QString(buffer)){
+                if(QMessageBox::Yes == QMessageBox::information(this, "Request for file transmission", "Do you accept it?", QMessageBox::Yes, QMessageBox::No)){
+                    tcpSocket_client->write("##AccptSending");
+                    logOutput("accept sending");
+                    sendOrReceiver = false;
+                    FileTransmit* dialog = new FileTransmit(this);
+                    dialog->show();
+                }
+                else{
+                    tcpSocket_client->write("##RefuseSending");
+                    logOutput("refuse sending");
+                }
+            }
+            else if("##AcceptSending" == QString(buffer)){
+                sendOrReceiver = true;
+            }
+            else if("##RefuseSending" == QString(buffer)){
+                QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
+            }
+        }
     });
     connect(tcpSocket, &QTcpSocket::connected, [=](){
         //tips for connected success
@@ -146,6 +168,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
                 else{
                     //window hints the "login/register failed"
+                    //window returns to login
+                    mode[0] = Login;
                 }
             }
             else if("question" == QString(buffer).section("##",1,1)){
