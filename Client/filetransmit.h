@@ -22,6 +22,12 @@ private slots:
     void readData_send();
     void readData_recv();
     void sendData();
+    void on_exit_clicked();
+
+    void on_choose_clicked();
+
+    void on_send_clicked();
+
 private:
     Ui::FileTransmit *ui;
     QUdpSocket* udpSocketServer;

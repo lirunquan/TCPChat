@@ -51,6 +51,12 @@ FileTransmit::FileTransmit(QWidget *parent) :
     connect(timer, &QTimer::timeout, [=](){
         sendData();
     });
+    ui->proLabel->setVisible(false);
+    ui->progressBar->setVisible(false);
+    ui->textBrowser->setVisible(false);
+    ui->send->setEnabled(false);
+    ui->nameLine->setText("");
+    ui->sizeLine->setText("");
 }
 
 FileTransmit::~FileTransmit()
@@ -328,4 +334,53 @@ void FileTransmit::readData_send()
             }
         }
     }
+}
+
+void FileTransmit::on_exit_clicked()
+{
+    if(udpSocketClient){
+        udpSocketClient->close();
+        delete udpSocketClient;
+        udpSocketClient = NULL;
+    }
+    if(udpSocketServer){
+        udpSocketServer->close();
+        delete udpSocketServer;
+        udpSocketServer = NULL;
+    }
+    close();
+}
+
+void FileTransmit::on_choose_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(this, "open", "../");
+    ui->textBrowser->setVisible(true);
+    if(false == filePath.isEmpty()){
+        ui->send->setEnabled(true);
+        ui->choose->setEnabled(false);
+        nameOfSend.clear();
+        QFileInfo info(filePath);
+        nameOfSend = info.fileName();
+        ui->nameLine->setText(nameOfSend);
+        sizeOfSend = info.size();
+        ui->sizeLine->setText(QString::number(sizeOfSend/1024/1024)+"MB");
+        sendedSize = 0;
+        fileToSend.setFileName(filePath);
+        if(false == fileToSend.open(QIODevice::ReadOnly)){
+            ui->textBrowser->append("Failed to open file with ReadOnly mode.");
+        }
+        ui->textBrowser->append(filePath);
+        fileInfo = QString("##%1##%2").arg(nameOfSend).arg(sizeOfSend);
+        ui->progressBar->setMaximum(sizeOfSend);
+        ui->progressBar->setMinimum(0);
+        ui->progressBar->setValue(0);
+    }
+    else {
+        ui->textBrowser->append("Invalid path.");
+    }
+}
+
+void FileTransmit::on_send_clicked()
+{
+
 }
