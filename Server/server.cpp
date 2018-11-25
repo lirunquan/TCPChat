@@ -89,7 +89,7 @@ void Server::init()
                 mode[index] = Chat;
                 tcpSocket[index]->write("##ChatMode, waiting request");
             }
-            if(mode[index] == AcceptLogin){
+            else if(mode[index] == AcceptLogin){
                 if("login" == QString(buffer).section("##", 0 ,0)){
                     logOutput("login");
                     bool isPass = false;
