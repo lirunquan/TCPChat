@@ -60,11 +60,11 @@ void Server::init()
         int index = cur;
         tcpSocket[index] = tcpServer->nextPendingConnection();
         cur ++;
+        mode[index] = Chat;
         QString ip = tcpSocket[index]->peerAddress().toString().section(":", 3,3);
         quint16 port = tcpSocket[index]->peerPort();
         logOutput(QString("[%1-%2] is connected successfully.").arg(ip).arg(port));
         connect(tcpSocket[index], &QTcpSocket::connected, [=](){
-            mode[index] = Chat;
         });
         connect(tcpSocket[index], &QTcpSocket::disconnected, [=](){
             logOutput(QString("[%1-%2] is disconnected.").arg(ip).arg(port));
