@@ -392,14 +392,21 @@ void MainWindow::on_toRegisterBtn_clicked()
     ui->usernameEdit->setText("");
     ui->passwordEdit->setText("");
     ui->stackedWidget->setCurrentIndex(2);
+    ui->registerBtn->setEnabled(false);
 }
 
 void MainWindow::on_cancelBtn_clicked()
 {
+    ui->r_username->setText("");
+    ui->r_password->setText("");
+    ui->r_answer->setText("");
+    ui->r_question->setCurrentIndex(0);
+    ui->stackedWidget->setCurrentIndex(1);
 
 }
 
 void MainWindow::on_registerBtn_clicked()
 {
-
+//    qDebug()<<ui->r_question->currentText();
+    userRegister(ui->r_username->text(), ui->r_password->text(), ui->r_question->currentText(), ui->r_answer->text());
 }

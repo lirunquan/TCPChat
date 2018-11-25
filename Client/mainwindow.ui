@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="page_5"/>
     <widget class="QWidget" name="page">
@@ -248,6 +248,21 @@
          <height>25</height>
         </rect>
        </property>
+       <item>
+        <property name="text">
+         <string>What's my name?</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>What's my student ID?</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>When is my birthday?</string>
+        </property>
+       </item>
       </widget>
       <widget class="QLineEdit" name="r_answer">
        <property name="geometry">
@@ -287,6 +302,7 @@
       </widget>
      </widget>
     </widget>
+    <widget class="QWidget" name="page_6"/>
    </widget>
    <widget class="QFrame" name="frame">
     <property name="geometry">
