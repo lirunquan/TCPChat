@@ -87,6 +87,7 @@ void Server::init()
             logOutput(buffer);
             if("##ChatMode" == QString(buffer)){
                 mode[index] = Chat;
+                logOutput("mode=chat");
                 tcpSocket[index]->write("##ChatMode, waiting request");
             }
             else if(mode[index] == AcceptLogin){
