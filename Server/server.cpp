@@ -186,7 +186,7 @@ void Server::init()
                     mode[index] = Chat;
                 }
             }
-            else if(mode[index] == Chat){
+            if(mode[index] == Chat){
                 if("##Request for login" == QString(buffer)){
                     logOutput("Request for login");
                     tcpSocket[index]->write("##Permission for login");
