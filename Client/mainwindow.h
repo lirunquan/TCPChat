@@ -33,6 +33,10 @@ public:
 private slots:
     void on_loginBtn_clicked();
 
+    void on_toRegisterBtn_clicked();
+
+    void on_cancelBtn_clicked();
+
     void on_registerBtn_clicked();
 
 private:

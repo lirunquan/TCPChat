@@ -62,10 +62,10 @@ MainWindow::MainWindow(QWidget *parent) :
     tcpServer = new QTcpServer(this);
     tcpSocket_client = new QTcpSocket(this);
     tcpSocket->connectToHost(QHostAddress(IP), PORT);
-    tcpSocket->write("##Request for login");//send tcp connect request for login
-    timer->start(time_out);
+    tcpSocket->write("##ChatMode");//send tcp connect request for login
+//    timer->start(time_out);
     ui->label->setText("Connecting to server...");
-    logOutput("Requset for login");
+//    logOutput("Requset for login");
     connect(tcpServer, &QTcpServer::newConnection, [=](){
         tcpSocket_client = tcpServer->nextPendingConnection();
         QString c_ip = tcpSocket_client->peerAddress().toString().section(":",3,3);
@@ -268,10 +268,14 @@ MainWindow::MainWindow(QWidget *parent) :
             }
         }
         else if("##Permission for login" == QString(buffer)){
-            timer->stop();
+//            timer->stop();
             //window change into login
-            ui->frame->setVisible(false);
+//            ui->frame->setVisible(false);
+            ui->label->setText("Login");
+            ui->label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
             ui->frame_2->setVisible(true);
+            ui->stackedWidget->setCurrentIndex(1);
+            setWindowTitle("Login");
             //userLogin();  or  userRegister();
 //            on_loginBtn_clicked();
 //            if(requestString != ""){
@@ -281,6 +285,10 @@ MainWindow::MainWindow(QWidget *parent) :
 //            else{
 //                logOutput("request string is empty.");
 //            }
+        }
+        else if("##ChatMode, waiting request" == QString(buffer)){
+            tcpSocket->write("##Request for login");
+//            timer->start(time_out);
         }
         else{
             //handle common message, sending "A##message##B" means A sends message to B
@@ -374,6 +382,21 @@ void MainWindow::on_loginBtn_clicked()
     else{
         QMessageBox::warning(this, "Error", "Please enter your username.");
     }
+}
+
+
+void MainWindow::on_toRegisterBtn_clicked()
+{
+    setWindowTitle("Register");
+    ui->label->setText("Register");
+    ui->usernameEdit->setText("");
+    ui->passwordEdit->setText("");
+    ui->stackedWidget->setCurrentIndex(2);
+}
+
+void MainWindow::on_cancelBtn_clicked()
+{
+
 }
 
 void MainWindow::on_registerBtn_clicked()
