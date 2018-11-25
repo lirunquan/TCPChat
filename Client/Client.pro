@@ -26,11 +26,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    user.cpp
+    user.cpp \
+    filetransmit.cpp
 
 HEADERS += \
         mainwindow.h \
-    user.h
+    user.h \
+    filetransmit.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    filetransmit.ui

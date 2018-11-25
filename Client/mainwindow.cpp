@@ -3,6 +3,7 @@
 #include "user.h"
 #include <QMessageBox>
 #include <QTextStream>
+#include <QtNetwork>
 
 const int time_out = 1000;//longest waiting time;
 const int M = 20;//max size of users;
@@ -23,7 +24,7 @@ bool isFind = false;
 bool isQuestionReturn, isOffline, isSet;
 
 quint16 port_num;
-
+QString ip_send, ip_recv;
 QString requestString = "";
 QString m_name;
 QString m_ques,m_answ;
@@ -46,6 +47,15 @@ MainWindow::MainWindow(QWidget *parent) :
         logOutput("Error: Connect Failed.");
         timer->stop();
     });
+    QString localHostName = QHostInfo::localHostName();
+    logOutput(localHostName);
+    QHostInfo info = QHostInfo::fromName(localHostName);
+    foreach (QHostAddress address, info.addresses()) {
+        if(address.protocol() == QAbstractSocket::IPv4Protocol){
+            logOutput(address.toString());
+        }
+    }
+    isSet = false;
     tcpSocket = new QTcpSocket(this);
     tcpServer = new QTcpServer(this);
     tcpSocket_client = new QTcpSocket(this);
@@ -54,13 +64,55 @@ MainWindow::MainWindow(QWidget *parent) :
     timer->start(time_out);
     logOutput("Requset for login");
     connect(tcpServer, &QTcpServer::newConnection, [=](){
+        tcpSocket_client = tcpServer->nextPendingConnection();
+        QString c_ip = tcpSocket_client->peerAddress().toString().section(":",3,3);
+        mode[1] = Chat;
+        logOutput(QString("%1 is connected, number of users: %2").arg(c_ip).arg(m_size));
+        logOutput(m_name);
+        for(int i=0; i<m_size; i++){
+            if(user[i]->ip == c_ip){
+                ip_recv = c_ip;
+                logOutput(QString("%1 is connected to localhost").arg(user[i]->username));
+                break;
+            }
+        }
+        connect(tcpSocket_client, &QTcpSocket::connected, [=](){
 
+        });
+        connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
+            ip_recv.clear();
+        });
+        connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
+            QString buffer = tcpSocket_client->readAll();
+            logOutput(buffer);
+            if(mode[1] == Chat){
+                if("##RequestForSendingFile" == QString(buffer)){
+                    if(QMessageBox::Yes == QMessageBox::information(
+                                this, "Request for file transmission", "Do you accept it?", QMessageBox::Yes, QMessageBox::No)){
+                        tcpSocket_client->write("##AcceptSending");
+                        logOutput("accept sending");
+                        sendOrReceiver = false;
+                        //show dialog of sending file
+                    }
+                    else{
+                        tcpSocket_client->write("##RefuseSending");
+                        logOutput("refuse sending");
+                    }
+                }
+                else if("##AcceptSending" == QString(buffer)){
+                    sendOrReceiver = true;
+                }
+                else if("##RefuseSending" == QString(buffer)){
+
+                }
+            }
+        });
     });
     connect(tcpSocket_client, &QTcpSocket::connected, [=](){
 
     });
     connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
-
+        ip_recv.clear();
     });
     connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
 
@@ -113,6 +165,9 @@ MainWindow::MainWindow(QWidget *parent) :
                 logOutput(QString(buffer));
                 logOutput("something wrong");
             }
+        }
+        else if(mode[0] == Client){
+
         }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
             if(m_name != QString(buffer).section("##",2,2)){
@@ -184,6 +239,7 @@ MainWindow::MainWindow(QWidget *parent) :
         else if("##Permission for login" == QString(buffer)){
             timer->stop();
             //window change into login
+            //userLogin();  or  userRegister();
             if(requestString != ""){
                 tcpSocket->write(requestString.toUtf8());
                 mode[0] = Login;
