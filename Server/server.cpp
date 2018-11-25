@@ -182,7 +182,7 @@ void Server::init()
                 }
                 else{
                     logOutput("wrong request");
-                    tcpSocket[index]->disconnectFromHost();
+//                    tcpSocket[index]->disconnectFromHost();
                     mode[index] = Chat;
                 }
             }
