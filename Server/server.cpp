@@ -107,6 +107,7 @@ void Server::init()
                     else{
                         tcpSocket[index]->write(QString("##login failed##%1").arg(QString(buffer).section("##",1,1)).toUtf8());
                         logOutput(QString("%1 login failed").arg(QString(buffer).section("##",1,1)));
+                        mode[index] = Chat;
                     }
                 }
                 else if("register" == QString(buffer).section("##",0,0)){

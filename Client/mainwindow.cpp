@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->frame_2->setVisible(false);
     for(int i=0; i<M; i++){
         user[i] = NULL;
     }
@@ -63,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     tcpSocket->connectToHost(QHostAddress(IP), PORT);
     tcpSocket->write("##Request for login");//send tcp connect request for login
     timer->start(time_out);
+    ui->label->setText("Connecting to server...");
     logOutput("Requset for login");
     connect(tcpServer, &QTcpServer::newConnection, [=](){
         tcpSocket_client = tcpServer->nextPendingConnection();
@@ -145,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(tcpSocket, &QTcpSocket::connected, [=](){
         //tips for connected success
         logOutput("connected success");
+        ui->label->setText("Connecting to server  ...  Done.");
         isOffline = false;
         mode[0] = Chat;
     });
@@ -154,11 +157,12 @@ MainWindow::MainWindow(QWidget *parent) :
     });
     connect(tcpSocket, &QTcpSocket::readyRead, [=](){
         QByteArray buffer = tcpSocket->readAll();
+        logOutput(QString(buffer));
         if(mode[0] == Login){
             if(!isFind){                
                 if("login success" == QString(buffer).section("##",1,1)){
                     //login success, open the chat window
-                    tcpSocket->write("##RequsetForUserInfo");
+                    tcpSocket->write("##RequestForUserInfo");
                     mode[0] = Chat;
                 }
                 else if("register success" == QString(buffer).section("##",1,1)){
@@ -266,14 +270,17 @@ MainWindow::MainWindow(QWidget *parent) :
         else if("##Permission for login" == QString(buffer)){
             timer->stop();
             //window change into login
+            ui->frame->setVisible(false);
+            ui->frame_2->setVisible(true);
             //userLogin();  or  userRegister();
-            if(requestString != ""){
-                tcpSocket->write(requestString.toUtf8());
-                mode[0] = Login;
-            }
-            else{
-                logOutput("request string is empty.");
-            }
+//            on_loginBtn_clicked();
+//            if(requestString != ""){
+//                tcpSocket->write(requestString.toUtf8());
+//                mode[0] = Login;
+//            }
+//            else{
+//                logOutput("request string is empty.");
+//            }
         }
         else{
             //handle common message, sending "A##message##B" means A sends message to B
@@ -339,11 +346,13 @@ void MainWindow::sendFile()
 void MainWindow::userLogin(QString username, QString password)
 {
     requestString = QString("login##%1##%2").arg(username).arg(password);
+    tcpSocket->write(requestString.toUtf8());
     logOutput(requestString);
 }
 void MainWindow::userRegister(QString username, QString password, QString question, QString answer)
 {
     requestString = QString("register##%1##%2##%3##%4").arg(username).arg(password).arg(question).arg(answer);
+    tcpSocket->write(requestString.toUtf8());
     logOutput(requestString);
 }
 void MainWindow::exit()
@@ -356,4 +365,18 @@ void MainWindow::exit()
     if(tcpSocket->isOpen()){
         tcpSocket->disconnectFromHost();//disconnect the connection to server
     }
+}
+
+void MainWindow::on_loginBtn_clicked()
+{
+    if(ui->usernameEdit->text() != "" && ui->passwordEdit->text() != "")
+        userLogin(ui->usernameEdit->text(), ui->passwordEdit->text());
+    else{
+        QMessageBox::warning(this, "Error", "Please enter your username.");
+    }
+}
+
+void MainWindow::on_registerBtn_clicked()
+{
+
 }

@@ -30,6 +30,11 @@ public:
     void userRegister(QString username, QString password, QString question, QString answer);
     void userLogin(QString username, QString password);
     void exit();
+private slots:
+    void on_loginBtn_clicked();
+
+    void on_registerBtn_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTcpServer* tcpServer;

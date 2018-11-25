@@ -51,9 +51,9 @@ FileTransmit::FileTransmit(QWidget *parent) :
     connect(timer, &QTimer::timeout, [=](){
         sendData();
     });
-    ui->proLabel->setVisible(false);
-    ui->progressBar->setVisible(false);
-    ui->textBrowser->setVisible(false);
+//    ui->proLabel->setVisible(false);
+//    ui->progressBar->setVisible(false);
+//    ui->textBrowser->setVisible(false);
     ui->send->setEnabled(false);
     ui->nameLine->setText("");
     ui->sizeLine->setText("");
@@ -170,9 +170,9 @@ void FileTransmit::readData_recv()
                             int sum = totTime.msecsTo(QTime::currentTime());
                             int sum_s = sum/1000;
                             long int speed_s = (sizeOfRecv*1000/sum)/1024;
-                            if(sum_sec >= 60){
-                                int sum_min = sum_sec/60;
-                                sum_sec = sum_sec%60;
+                            if(sum_s >= 60){
+                                int sum_m = sum_s/60;
+                                sum_s = sum_s%60;
                                 QMessageBox::warning(this,
                                                      "Transmission completed",
                                                      QString("Takes %1 (min) %2 (sec). \nAverage Speed: %3 kb/s").arg(sum_m).arg(sum_s).arg(speed_s),
@@ -248,7 +248,7 @@ void FileTransmit::readData_send()
             //progressbar,button,text
             timer->stop();
             delete timer;
-            QDebug()<<"All transmitted";
+            qDebug()<<"All transmitted";
             int sum = totTime.elapsed();
             int sum_sec = sum/1000;
             long int speed = (sizeOfSend*1000/sum)/1024;
@@ -355,6 +355,7 @@ void FileTransmit::on_choose_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "open", "../");
     ui->textBrowser->setVisible(true);
+    ui->proLabel->setVisible(true);
     if(false == filePath.isEmpty()){
         ui->send->setEnabled(true);
         ui->choose->setEnabled(false);
@@ -382,5 +383,6 @@ void FileTransmit::on_choose_clicked()
 
 void FileTransmit::on_send_clicked()
 {
-
+    ui->send->setEnabled(false);
+    udpSocketServer->writeDatagram(QString("FileHead%1").arg(fileInfo).toUtf8(), QHostAddress(ip_recv), recvPort);
 }
