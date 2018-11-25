@@ -163,7 +163,7 @@ void Server::init()
                         User_data->u[indexOf]->online_state = 1;
                         User_data->u[indexOf]->ipAdd = ip;
                         User_data->u[indexOf]->port = qrand()%10000+10000;
-                        tcpSocket[index]->write(QString("##answer is right##%1").arg(User_data->u[indexOf]->username));/*.arg(User_data->u[indexOf]->password).toUtf8())*/
+                        tcpSocket[index]->write(QString("##answer is right##%1").arg(User_data->u[indexOf]->username).toUtf8());/*.arg(User_data->u[indexOf]->password).toUtf8())*/
                         saveToFile();
                     }
                     else{
