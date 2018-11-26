@@ -168,6 +168,7 @@ MainWindow::MainWindow(QWidget *parent) :
             if(!isFind){                
                 if("login success" == QString(buffer).section("##",1,1)){
                     //login success, open the chat window
+                    this->setGeometry (0,0,60,80);
                     tcpSocket->write("##RequestForUserInfo");
                     mode[0] = Chat;
                 }
