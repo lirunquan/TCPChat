@@ -1,0 +1,8 @@
+<RCC>
+   <qresource prefix="/">
+   <file>image/加粗.png</file>
+   <file>image/下划线.png</file>
+   <file>image/斜体.png</file>
+   <file>image/关闭.png</file>
+   </qresource>
+ </RCC>
