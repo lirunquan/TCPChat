@@ -31,6 +31,8 @@ public:
     void userLogin(QString username, QString password);
     void exit();
 private slots:
+    void registerEnabled();
+
     void on_loginBtn_clicked();
 
     void on_toRegisterBtn_clicked();
@@ -38,6 +40,12 @@ private slots:
     void on_cancelBtn_clicked();
 
     void on_registerBtn_clicked();
+
+    void on_usernameEdit_textChanged(const QString &arg1);
+
+    void on_passwordEdit_textChanged(const QString &arg1);
+
+    void on_forgotBtn_clicked();
 
 private:
     Ui::MainWindow *ui;

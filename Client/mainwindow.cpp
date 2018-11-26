@@ -36,6 +36,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->frame_2->setVisible(false);
+    connect(ui->r_username, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
+    connect(ui->r_password, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
+    connect(ui->r_confirm, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
+    connect(ui->r_answer, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     for(int i=0; i<M; i++){
         user[i] = NULL;
     }
@@ -179,6 +183,7 @@ MainWindow::MainWindow(QWidget *parent) :
             else if("question" == QString(buffer).section("##",1,1)){
                 m_ques = QString(buffer).section("##",2,2);
                 //window change into finding password, change the m_answer
+                ui->stackedWidget->setCurrentIndex(3);
                 //m_answ = QString("answer##%1##").arg(what user input);
                 //m_answ.append(newpassword);
                 tcpSocket->write(m_answ.toUtf8());
@@ -276,15 +281,7 @@ MainWindow::MainWindow(QWidget *parent) :
             ui->frame_2->setVisible(true);
             ui->stackedWidget->setCurrentIndex(1);
             setWindowTitle("Login");
-            //userLogin();  or  userRegister();
-//            on_loginBtn_clicked();
-//            if(requestString != ""){
-//                tcpSocket->write(requestString.toUtf8());
-//                mode[0] = Login;
-//            }
-//            else{
-//                logOutput("request string is empty.");
-//            }
+            ui->loginBtn->setEnabled(false);
         }
         else if("##ChatMode, waiting request" == QString(buffer)){
             tcpSocket->write("##Request for login");
@@ -392,13 +389,14 @@ void MainWindow::on_toRegisterBtn_clicked()
     ui->usernameEdit->setText("");
     ui->passwordEdit->setText("");
     ui->stackedWidget->setCurrentIndex(2);
-    ui->registerBtn->setEnabled(false);
+    registerEnabled();
 }
 
 void MainWindow::on_cancelBtn_clicked()
 {
     ui->r_username->setText("");
     ui->r_password->setText("");
+    ui->r_confirm->setText("");
     ui->r_answer->setText("");
     ui->r_question->setCurrentIndex(0);
     ui->stackedWidget->setCurrentIndex(1);
@@ -408,5 +406,69 @@ void MainWindow::on_cancelBtn_clicked()
 void MainWindow::on_registerBtn_clicked()
 {
 //    qDebug()<<ui->r_question->currentText();
-    userRegister(ui->r_username->text(), ui->r_password->text(), ui->r_question->currentText(), ui->r_answer->text());
+    QChar c = ui->r_username->text().at(0);
+    if(ui->r_username->text().isEmpty()){
+        QMessageBox::warning(this, "Error", "Username is required.");
+    }
+    else if(!c.isLetterOrNumber()){
+        QMessageBox::warning(this, "Error", "Invalid username.");
+        ui->r_username->setText("");
+        ui->r_password->setText("");
+    }
+    else if(ui->r_password->text().length() <= 6){
+        QMessageBox::warning(this, "Error", "Password is required to be longer than 6.");
+        ui->r_password->setText("");
+        ui->r_confirm->setText("");
+    }
+    else if(ui->r_confirm->text().isEmpty() || ui->r_confirm->text() != ui->r_password->text()){
+        QMessageBox::warning(this, "Error", "Please confirm your password.");
+        ui->r_password->setText("");
+        ui->r_confirm->setText("");
+    }
+    else if(ui->r_answer->text().isEmpty()){
+        QMessageBox::warning(this, "Error", "Please enter your answer.");
+    }
+    else{
+        //userRegister(ui->r_username->text(), ui->r_password->text(), ui->r_question->currentText(), ui->r_answer->text());
+    }
+}
+
+void MainWindow::on_usernameEdit_textChanged(const QString &arg1)
+{
+    if(!(ui->usernameEdit->text().isEmpty()||ui->passwordEdit->text().isEmpty())){
+        ui->loginBtn->setEnabled(true);
+    }
+    else{
+        ui->loginBtn->setEnabled(false);
+    }
+}
+
+void MainWindow::on_passwordEdit_textChanged(const QString &arg1)
+{
+    if(ui->usernameEdit->text().isEmpty()||ui->passwordEdit->text().length()<6){
+        ui->loginBtn->setEnabled(false);
+    }
+    else{
+        ui->loginBtn->setEnabled(true);
+    }
+}
+void MainWindow::registerEnabled()
+{
+    if(ui->r_username->text().isEmpty() || ui->r_password->text().isEmpty() || ui->r_confirm->text().isEmpty() ||
+            ui->r_question->currentText().isEmpty() || ui->r_answer->text().isEmpty()){
+        ui->registerBtn->setEnabled(false);
+    }
+    else {
+        ui->registerBtn->setEnabled(true);
+    }
+}
+
+void MainWindow::on_forgotBtn_clicked()
+{
+    ui->label->setText("");
+    if(!ui->usernameEdit->text().isEmpty()){
+//        ui->stackedWidget->setCurrentIndex(3);
+        tcpSocket->write(QString("find##%1").arg(ui->usernameEdit->text()));
+    }
+
 }
