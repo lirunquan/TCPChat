@@ -95,8 +95,10 @@ void Server::init()
                     logOutput("login");
                     bool isPass = false;
                     for(int i=0; i<User_data->size; i++){
-                        if(User_data->u[i]->username == QString(buffer).section("##", 1, 1) &&
-                                User_data->u[i]->password == QString(buffer).section("##", 2,2)){
+                        QString s1 = readString(QString(buffer).section("##",1,1));
+                        QString s2 = readString(QString(buffer).section("##",2,2));
+                        if(User_data->u[i]->username == s1 &&
+                                User_data->u[i]->password == s2){
                             isPass = true;
                             logOutput(QString("%1 is connected successfully.").arg(User_data->u[i]->username));
                             User_data->u[i]->online_state = 1;
@@ -117,10 +119,10 @@ void Server::init()
                 }
                 else if("register" == QString(buffer).section("##",0,0)){
                     logOutput("register");
-                    QString m_name = QString(buffer).section("##",1,1);
-                    QString m_password = QString(buffer).section("##",2,2);
+                    QString m_name = readString(QString(buffer).section("##",1,1));
+                    QString m_password = readString(QString(buffer).section("##",2,2));
                     QString m_question = QString(buffer).section("##",3,3);
-                    QString m_answer = QString(buffer).section("##",4,4);
+                    QString m_answer = readString(QString(buffer).section("##",4,4));
                     bool isRegistered = false;
                     for(int i=0; i<User_data->size; i++){
                         if(User_data->u[i]->username == m_name){
@@ -147,15 +149,15 @@ void Server::init()
                     QString findName = QString(buffer).section("##",1,1);
                     bool isReturn = false;
                     for(int i=0;i<User_data->size; i++){
-                        if(User_data->u[i]->username == findName){
+                        if(User_data->u[i]->username == readString(findName)){
                             indexOf = i;
                             isReturn = true;
                             tcpSocket[index]->write(QString("##question##%1").arg(User_data->u[i]->question).toUtf8());
-                            logOutput(QString("%1's question").arg(findName));
+                            logOutput(QString("%1's question").arg(readString(findName)));
                         }
                     }
                     if(!isReturn){
-                        tcpSocket[index]->write(QString("user %1 does not exist").arg(findName).toUtf8());
+                        tcpSocket[index]->write(QString("user %1 does not exist").arg(readString(findName)).toUtf8());
                         mode[index] = Chat;
                     }
                 }
@@ -163,7 +165,7 @@ void Server::init()
                     QString answer = QString(buffer).section("##",1,1);
                     if(User_data->u[indexOf]->answer == answer){
                         logOutput(QString("user %1 find correctly, is online now").arg(User_data->u[indexOf]->username));
-                        QString new_pass = QString(buffer).section("##",2,2);
+                        QString new_pass = readString(QString(buffer).section("##",2,2));
                         User_data->u[indexOf]->password = new_pass;
                         User_data->u[indexOf]->online_state = 1;
                         User_data->u[indexOf]->ipAdd = ip;
@@ -200,7 +202,7 @@ void Server::init()
                 else{
                     QString s = "common message"+QString(buffer);
                     logOutput(s);
-                    QString reciever = QString(buffer).section("##", 2,2);
+                    QString reciever = readString(QString(buffer).section("##", 2,2));
                     for(int i=0;i<User_data->size; i++){
                         logOutput(QString("%1 %2 %3").arg(i).arg(User_data->size).arg(User_data->u[i]->username));
                         if(reciever == User_data->u[i]->username){
@@ -215,13 +217,13 @@ void Server::init()
                             else{
                                 MessageQueue* s = Message;
                                 if(Message == NULL){
-                                    Message = new MessageQueue(QString(buffer), QString(buffer).section("##",2,2));
+                                    Message = new MessageQueue(QString(buffer), readString(QString(buffer).section("##",2,2)));
                                 }
                                 else{
                                     while(s->next != NULL){
                                         s = s->next;
                                     }
-                                    s->next = new MessageQueue(QString(buffer), QString(buffer).section("##",2,2));
+                                    s->next = new MessageQueue(QString(buffer), readString(QString(buffer).section("##",2,2)));
                                 }
                             }
                             break;
@@ -318,13 +320,26 @@ void Server::logOutput(QString log)
     }
     logFile.close();
 }
+QString Server::readString(QString str)
+{
+    QString string = str;
+    for(int i=0; i<str.length(); i++){
+        if(str.at(i) == '#'){
+            string.remove(i-1,1);
+        }
+        if(str.at(i) == '&'){
+            string.remove(i-1,1);
+        }
+    }
+    return string;
+}
 void Server::handleMessage(QString m_name, QTcpSocket *socket)
 {
     MessageQueue* a = Message;
     QString sendMessage = "";
     int count = 0;
     while(a){
-        if(a->reciever == m_name){
+        if(a->reciever == readString(m_name)){
             sendMessage.append(QString("&&%1").arg(a->message));
             count++;
             a->isSended = true;

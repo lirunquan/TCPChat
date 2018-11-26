@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page_5"/>
     <widget class="QWidget" name="page">
@@ -137,8 +137,14 @@
       <property name="text">
        <string>Forgot Password</string>
       </property>
-      <property name="flat">
+      <property name="autoDefault">
        <bool>true</bool>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
       </property>
      </widget>
     </widget>

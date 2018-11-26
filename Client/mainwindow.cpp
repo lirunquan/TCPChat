@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->frame_2->setVisible(false);
+    ui->stackedWidget->setCurrentIndex(0);
     connect(ui->r_username, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_password, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_confirm, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
@@ -199,6 +200,12 @@ MainWindow::MainWindow(QWidget *parent) :
                 tcpSocket->write("##RequestForUserInfo");
                 mode[0] = Chat;
             }
+            else if("##answer is wrong" == QString(buffer)){
+
+            }
+            else if(QString("user %1 does not exist").arg(ui->usernameEdit->text()) == QString(buffer)){
+
+            }
             else{
                 tcpSocket->write("wrong request");
                 logOutput(QString(buffer));
@@ -285,6 +292,7 @@ MainWindow::MainWindow(QWidget *parent) :
             ui->stackedWidget->setCurrentIndex(1);
             setWindowTitle("Login");
             ui->loginBtn->setEnabled(false);
+            ui->forgotBtn->setEnabled(false);
         }
         else if("##ChatMode, waiting request" == QString(buffer)){
             tcpSocket->write("##Request for login");
@@ -363,6 +371,19 @@ void MainWindow::userRegister(QString username, QString password, QString questi
     tcpSocket->write(requestString.toUtf8());
     logOutput(requestString);
 }
+QString MainWindow::handledString(QString str)
+{
+    QString string = str;
+    for(int i=0; i<str.length(); i++){
+        if(str.at(i) == '#'){
+            string.insert(i, "/");
+        }
+        if(str.at(i) == '&'){
+            string.insert(i, "/");
+        }
+    }
+    return string;
+}
 void MainWindow::exit()
 {
     for(int i=0; i<m_size; i++){
@@ -377,11 +398,8 @@ void MainWindow::exit()
 
 void MainWindow::on_loginBtn_clicked()
 {
-    if(ui->usernameEdit->text() != "" && ui->passwordEdit->text() != "")
-        userLogin(ui->usernameEdit->text(), ui->passwordEdit->text());
-    else{
-        QMessageBox::warning(this, "Error", "Please enter your username.");
-    }
+    userLogin(handledString(ui->usernameEdit->text()), handledString(ui->passwordEdit->text()));
+//    QMessageBox::warning(this, "Error", "Please enter your username.");
 }
 
 
@@ -432,17 +450,20 @@ void MainWindow::on_registerBtn_clicked()
         QMessageBox::warning(this, "Error", "Please enter your answer.");
     }
     else{
-        //userRegister(ui->r_username->text(), ui->r_password->text(), ui->r_question->currentText(), ui->r_answer->text());
+        userRegister(handledString(ui->r_username->text()),
+                     handledString(ui->r_password->text()),
+                     ui->r_question->currentText(),
+                     handledString(ui->r_answer->text()));
     }
 }
 
 void MainWindow::on_usernameEdit_textChanged(const QString &arg1)
 {
-    if(!(ui->usernameEdit->text().isEmpty()||ui->passwordEdit->text().isEmpty())){
-        ui->loginBtn->setEnabled(true);
+    if(ui->usernameEdit->text().isEmpty()){
+        ui->forgotBtn->setEnabled(false);
     }
     else{
-        ui->loginBtn->setEnabled(false);
+        ui->forgotBtn->setEnabled(true);
     }
 }
 
@@ -471,7 +492,36 @@ void MainWindow::on_forgotBtn_clicked()
     ui->label->setText("");
     if(!ui->usernameEdit->text().isEmpty()){
 //        ui->stackedWidget->setCurrentIndex(3);
-        tcpSocket->write(QString("find##%1").arg(ui->usernameEdit->text()));
+        tcpSocket->write(QString("find##%1").arg(ui->usernameEdit->text()).toUtf8());
     }
+
+}
+
+void MainWindow::on_f_send_clicked()
+{
+    if(ui->f_answer->text().isEmpty()){
+        QMessageBox::warning(this, "Error", "Please enter your answer.");
+    }
+    else if(ui->f_newpw->text().isEmpty()){
+        QMessageBox::warning(this, "Error", "Please enter your new password.");
+    }
+    else if(ui->f_confirm->text().isEmpty()){
+        QMessageBox::warning(this, "Error", "Please confirm your password.");
+    }
+    else if(ui->f_confirm->text() != ui->f_newpw->text()){
+        QMessageBox::warning(this, "Error", "The two passwords don't agree.");
+    }
+    else{
+        m_answ = QString("answer##%1##").arg(handledString(ui->f_answer->text()).append(handledString(ui->f_newpw->text()));
+        tcpSocket->write(m_answ.toUtf8());
+    }
+}
+
+void MainWindow::on_f_cancel_clicked()
+{
+    ui->f_username->setText("");
+    ui->f_question->setText("");
+    ui->f_answer->setText("");
+    ui->f_newpw->setText("");
 
 }

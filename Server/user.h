@@ -15,6 +15,7 @@ public:
     bool setIpPort(QString m_name, QString m_ip, int m_port);
     bool setState(QString m_name);
     QString toString();
+    QString preString(QString str);
     QString username;
     QString password;
     QString question;

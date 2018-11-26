@@ -29,6 +29,7 @@ public:
     void sendFile();
     void userRegister(QString username, QString password, QString question, QString answer);
     void userLogin(QString username, QString password);
+    QString handledString(QString str);
     void exit();
 private slots:
     void registerEnabled();
@@ -46,6 +47,10 @@ private slots:
     void on_passwordEdit_textChanged(const QString &arg1);
 
     void on_forgotBtn_clicked();
+
+    void on_f_send_clicked();
+
+    void on_f_cancel_clicked();
 
 private:
     Ui::MainWindow *ui;

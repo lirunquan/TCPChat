@@ -23,6 +23,7 @@ public:
     void userStateUpdate();
     void saveToFile();
     void logOutput(QString log);
+    QString readString(QString str);
 signals:
 
 public slots:

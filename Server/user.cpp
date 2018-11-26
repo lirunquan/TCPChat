@@ -30,7 +30,20 @@ bool User::setState(QString m_name)
     }
     else return false;
 }
+QString User::preString(QString str)
+{
+    QString string = str;
+    for(int i=0;i<str.length();i++){
+        if(str.at(i) == '#'){
+            string.insert(i,"/");
+        }
+        if(str.at(i) == '&'){
+            string.insert(i,"/");
+        }
+    }
+    return string;
+}
 QString User::toString()
 {
-    return QString("%1 %2 %3 %4 ").arg(username).arg(online_state).arg(ipAdd).arg(port);
+    return QString("%1 %2 %3 %4 ").arg(preString(username)).arg(online_state).arg(ipAdd).arg(port);
 }
