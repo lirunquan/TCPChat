@@ -374,14 +374,8 @@ void MainWindow::userRegister(QString username, QString password, QString questi
 QString MainWindow::handledString(QString str)
 {
     QString string = str;
-    for(int i=0; i<str.length(); i++){
-        if(str.at(i) == '#'){
-            string.insert(i, "/");
-        }
-        if(str.at(i) == '&'){
-            string.insert(i, "/");
-        }
-    }
+    string.replace(QString("#"), QString("/#"));
+    string.replace(QString("&"), QString("/&"));
     return string;
 }
 void MainWindow::exit()
@@ -512,7 +506,7 @@ void MainWindow::on_f_send_clicked()
         QMessageBox::warning(this, "Error", "The two passwords don't agree.");
     }
     else{
-        m_answ = QString("answer##%1##").arg(handledString(ui->f_answer->text()).append(handledString(ui->f_newpw->text()));
+        m_answ = QString("answer##%1##").arg(handledString(ui->f_answer->text())).append(handledString(ui->f_newpw->text()));
         tcpSocket->write(m_answ.toUtf8());
     }
 }
