@@ -184,9 +184,12 @@ MainWindow::MainWindow(QWidget *parent) :
                 m_ques = QString(buffer).section("##",2,2);
                 //window change into finding password, change the m_answer
                 ui->stackedWidget->setCurrentIndex(3);
+                ui->f_username->setText(ui->usernameEdit->text());
+                ui->f_question->setText(m_ques);
+
                 //m_answ = QString("answer##%1##").arg(what user input);
                 //m_answ.append(newpassword);
-                tcpSocket->write(m_answ.toUtf8());
+//                tcpSocket->write(m_answ.toUtf8());
                 isQuestionReturn = true;
             }
             else if("answer is right" == QString(buffer).section("##",1,1)){
