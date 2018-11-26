@@ -37,3 +37,6 @@ HEADERS += \
 FORMS += \
         mainwindow.ui \
     filetransmit.ui
+
+RESOURCES += \
+    tubiao.qrc
