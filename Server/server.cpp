@@ -172,7 +172,7 @@ void Server::init()
                         saveToFile();
                     }
                     else{
-                        tcpSocket[index]->write("the answer is wrong");
+                        tcpSocket[index]->write("##answer is wrong");
                         mode[index] = Chat;
                     }
                 }
