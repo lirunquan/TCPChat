@@ -10,13 +10,7 @@ MessageQueue::MessageQueue(QString m_message, QString m_name, MessageQueue* m_ne
 QString MessageQueue::preString(QString str)
 {
     QString string = str;
-    for(int i=0;i<str.length();i++){
-        if(str.at(i) == '#'){
-            string.insert(i,"/");
-        }
-        if(str.at(i) == '&'){
-            string.insert(i,"/");
-        }
-    }
+    string.replace(QString("#"), QString("/#"));
+    string.replace(QString("&"), QString("/&"));
     return string;
 }

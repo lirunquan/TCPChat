@@ -323,14 +323,8 @@ void Server::logOutput(QString log)
 QString Server::readString(QString str)
 {
     QString string = str;
-    for(int i=0; i<str.length(); i++){
-        if(str.at(i) == '#'){
-            string.remove(i-1,1);
-        }
-        if(str.at(i) == '&'){
-            string.remove(i-1,1);
-        }
-    }
+    string.replace(QString("/#"), QString("#"));
+    string.replace(QString("/&"), QString("&"));
     return string;
 }
 void Server::handleMessage(QString m_name, QTcpSocket *socket)

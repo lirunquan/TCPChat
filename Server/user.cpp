@@ -33,14 +33,8 @@ bool User::setState(QString m_name)
 QString User::preString(QString str)
 {
     QString string = str;
-    for(int i=0;i<str.length();i++){
-        if(str.at(i) == '#'){
-            string.insert(i,"/");
-        }
-        if(str.at(i) == '&'){
-            string.insert(i,"/");
-        }
-    }
+    string.replace(QString("#"), QString("/#"));
+    string.replace(QString("&"), QString("/&"));
     return string;
 }
 QString User::toString()
