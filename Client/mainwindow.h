@@ -30,6 +30,7 @@ public:
     void userRegister(QString username, QString password, QString question, QString answer);
     void userLogin(QString username, QString password);
     QString handledString(QString str);
+    QString readString(QString str);
     void exit();
 private slots:
     void registerEnabled();

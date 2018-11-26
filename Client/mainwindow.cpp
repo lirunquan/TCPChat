@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setGeometry(0,0,400,300);
     ui->frame_2->setVisible(false);
     ui->stackedWidget->setCurrentIndex(0);
     connect(ui->r_username, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
@@ -213,16 +214,39 @@ MainWindow::MainWindow(QWidget *parent) :
             }
         }
         else if(mode[0] == Client){
-
+            if("AcceptContact" == QString(buffer).section("##",1,1)){
+                if(m_name == readString(QString(buffer).section("##", 2,2))){
+                    QString connect_name = readString(QString(buffer).section("##",0,0));
+                    QString myIP = "";
+                    qint16 myPort = 0;
+                    for(int i=0;i<m_size;i++){
+                        if(user[i]->username == connect_name){
+                            myIP = user[i]->ip;
+                            myPort = user[i]->port;
+                        }
+                    }
+                    if(!myIP.isEmpty() && myPort!=0){
+                        tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
+                        if(tcpSocket_client->isOpen()){
+                            ip_recv = myIP;
+                        }
+                        mode[1] = Chat;
+                    }
+                }
+                else{
+                    QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
+                }
+            }
+            mode[0] = Chat;
         }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
-            if(m_name != QString(buffer).section("##",2,2)){
+            if(m_name != readString(QString(buffer).section("##",2,2))){
                 //show wrong request message in the window
             }
             else{
-                QString c_sender = QString(buffer).section("##",0,0);
+                QString c_sender = readString(QString(buffer).section("##",0,0));
                 //show contact sender in the window
-                tcpSocket->write(QString("%1##AcceptContact##%2").arg(m_name).arg(c_sender).toUtf8());
+                tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
             }
         }
         else if("load users' state" == QString(buffer).section("##",0,0)){
@@ -244,10 +268,10 @@ MainWindow::MainWindow(QWidget *parent) :
                     info >> u_state;
                     info >> u_ip;
                     info >> u_port;
-                    User* u_new = new User(u_name, u_state, u_ip, u_port);
+                    User* u_new = new User(readString(u_name), u_state, u_ip, u_port);
                     user[i] = u_new;
-                    if(!isSet && u_name == m_name){
-                        setWindowTitle(QString("%1 %2:%3").arg(u_name).arg(u_ip).arg(u_port));
+                    if(!isSet && readString(u_name) == m_name){
+                        setWindowTitle(QString("%1 %2:%3").arg(readString(u_name)).arg(u_ip).arg(u_port));
                         port_num = u_port;
                         tcpServer->listen(QHostAddress::Any, port_num);
                         isSet = true;
@@ -268,7 +292,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             if(!isOffline){
                 isOffline = true;
-                tcpSocket->write(QString("##Offline message##%1").arg(m_name).toUtf8());
+                tcpSocket->write(QString("##Offline message##%1").arg(handledString(m_name)).toUtf8());
                 logOutput("send offline message.");
             }
         }
@@ -276,9 +300,9 @@ MainWindow::MainWindow(QWidget *parent) :
             int num = QString(buffer).section("&&",1,1).toInt();//number of offline message
             for(int m=0; m<num+2; m++){
                 QString single = QString(buffer).section("&&",m,m);
-                QString sender = QString(single).section("##",0,0);//who sended
-                QString message_off = QString(single).section("##",1,1);//content of message
-                QString reciever = QString(single).section("##",2,2);//who will recieve
+                QString sender = readString(QString(single).section("##",0,0));//who sended
+                QString message_off = readString(QString(single).section("##",1,1)) ;//content of message
+                QString reciever = readString(QString(single).section("##",2,2)) ;//who will recieve
                 //show the message in the window
             }
         }
@@ -300,9 +324,9 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         else{
             //handle common message, sending "A##message##B" means A sends message to B
-            QString sender = QString(buffer).section("##",0,0);
-            QString m_common = QString(buffer).section("##",1,1);
-            QString reciever = QString(buffer).section("##",2,2);
+            QString sender = readString(QString(buffer).section("##",0,0));
+            QString m_common = readString(QString(buffer).section("##",1,1));
+            QString reciever = readString(QString(buffer).section("##",2,2));
             //show message in the window
         }
     });
@@ -350,7 +374,7 @@ void MainWindow::logOutput(QString log)
 }
 void MainWindow::sendMessage(QString sender, QString reciever, QString message)
 {
-    QString sending = sender.append(QString("##%1##").arg(message)).append(reciever);
+    QString sending = handledString(sender).append(QString("##%1##").arg(handledString(message))).append(handledString(reciever));
     tcpSocket->write(sending.toUtf8());
     logOutput(QString("Sending common message to %1").arg(reciever));
 }
@@ -361,13 +385,13 @@ void MainWindow::sendFile()
 }
 void MainWindow::userLogin(QString username, QString password)
 {
-    requestString = QString("login##%1##%2").arg(username).arg(password);
+    requestString = QString("login##%1##%2").arg(handledString(username)).arg(handledString(password));
     tcpSocket->write(requestString.toUtf8());
     logOutput(requestString);
 }
 void MainWindow::userRegister(QString username, QString password, QString question, QString answer)
 {
-    requestString = QString("register##%1##%2##%3##%4").arg(username).arg(password).arg(question).arg(answer);
+    requestString = QString("register##%1##%2##%3##%4").arg(handledString(username)).arg(handledString(password)).arg(handledString(question)).arg(handledString(answer));
     tcpSocket->write(requestString.toUtf8());
     logOutput(requestString);
 }
@@ -376,6 +400,13 @@ QString MainWindow::handledString(QString str)
     QString string = str;
     string.replace(QString("#"), QString("/#"));
     string.replace(QString("&"), QString("/&"));
+    return string;
+}
+QString MainWindow::readString(QString str)
+{
+    QString string = str;
+    string.replace(QString("/#"), QString("#"));
+    string.replace(QString("/&"), QString("&"));
     return string;
 }
 void MainWindow::exit()
@@ -392,7 +423,7 @@ void MainWindow::exit()
 
 void MainWindow::on_loginBtn_clicked()
 {
-    userLogin(handledString(ui->usernameEdit->text()), handledString(ui->passwordEdit->text()));
+    userLogin(ui->usernameEdit->text(), ui->passwordEdit->text());
 //    QMessageBox::warning(this, "Error", "Please enter your username.");
 }
 
@@ -444,10 +475,10 @@ void MainWindow::on_registerBtn_clicked()
         QMessageBox::warning(this, "Error", "Please enter your answer.");
     }
     else{
-        userRegister(handledString(ui->r_username->text()),
-                     handledString(ui->r_password->text()),
+        userRegister(ui->r_username->text(),
+                     ui->r_password->text(),
                      ui->r_question->currentText(),
-                     handledString(ui->r_answer->text()));
+                     ui->r_answer->text());
     }
 }
 
@@ -486,7 +517,7 @@ void MainWindow::on_forgotBtn_clicked()
     ui->label->setText("");
     if(!ui->usernameEdit->text().isEmpty()){
 //        ui->stackedWidget->setCurrentIndex(3);
-        tcpSocket->write(QString("find##%1").arg(ui->usernameEdit->text()).toUtf8());
+        tcpSocket->write(QString("find##%1").arg(handledString(ui->usernameEdit->text())).toUtf8());
     }
 
 }
