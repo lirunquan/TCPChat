@@ -542,7 +542,7 @@
    <widget class="QWidget" name="chatWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>250</x>
+      <x>360</x>
       <y>10</y>
       <width>791</width>
       <height>491</height>
@@ -765,8 +765,6 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="../../Desktop/test/tubiao.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
