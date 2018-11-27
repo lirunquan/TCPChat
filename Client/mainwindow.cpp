@@ -416,7 +416,7 @@ void MainWindow::logOutput(QString log)
     }
     logFile.close();
 }
-void MainWindow::sendMessage(QString sender, QString reciever, QString message)
+void MainWindow::sendMessage(QString sender, QString message, QString reciever)
 {
     QString sending = handledString(sender).append(
                 QString("##%1##%2##%3").arg(handledString(message))).arg(handledString(reciever)).arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
@@ -634,9 +634,19 @@ void MainWindow::on_c_file_send_clicked()
 
 void MainWindow::on_c_message_send_clicked()
 {
-    ui->msgBrowser->append(QObject::tr("<p align=right>%1 I:</p>").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
-    ui->msgBrowser->append(QObject::tr("<p align=right>%1</p>").arg(ui->msgEdit->toPlainText()));
-    sendMessage(m_name, ui->msgEdit->toPlainText(), recv_name);
+    if(!ui->msgEdit->toPlainText().isEmpty()){
+        ui->msgBrowser->append(QString("%1 I:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
+        ui->msgBrowser->append(QString("%1").arg(ui->msgEdit->toPlainText()));
+        ui->msgEdit->setText("");
+        sendMessage(m_name, ui->msgEdit->toPlainText(), recv_name);
+//        logOutput(handledString(ui->msgEdit->toPlainText()));
+//        logOutput(ui->msgEdit->toPlainText());
+        qDebug()<<ui->msgEdit->toHtml();
+        qDebug()<<handledString(ui->msgEdit->toHtml());
+    }
+    else{
+        QMessageBox::warning(NULL, "", "Can not send empty message.");
+    }
 }
 void MainWindow::online_click(QModelIndex index)
 {
@@ -652,7 +662,7 @@ void MainWindow::offline_click(QModelIndex index)
     recv_name = index.data().toString();
     recv_state = 0;
     ui->recver_label->setText(recv_name);
-    ui->msgBrowser->append(QString("<h2 align=center>--To %1--</h2>").arg(recv_name));
+    ui->msgBrowser->append(QString("--To %1--").arg(recv_name));
     ui->c_file_send->setEnabled(false);
     ui->c_message_send->setEnabled(true);
 }
