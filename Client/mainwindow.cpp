@@ -638,10 +638,10 @@ void MainWindow::on_c_message_send_clicked()
         ui->msgBrowser->append(QString("%1 I:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
         ui->msgBrowser->append(QString("%1").arg(ui->msgEdit->toPlainText()));
         ui->msgEdit->setText("");
-        sendMessage(m_name, ui->msgEdit->toPlainText(), recv_name);
+        sendMessage(m_name, ui->msgEdit->toHtml(), recv_name);
 //        logOutput(handledString(ui->msgEdit->toPlainText()));
 //        logOutput(ui->msgEdit->toPlainText());
-        qDebug()<<ui->msgEdit->toHtml();
+        qDebug()<<ui->msgEdit->placeholderText();
         qDebug()<<handledString(ui->msgEdit->toHtml());
     }
     else{
