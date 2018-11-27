@@ -37,7 +37,11 @@ QString User::preString(QString str)
     string.replace(QString("&"), QString("/&"));
     return string;
 }
+QString User::p_name()
+{
+    return preString(username);
+}
 QString User::toString()
 {
-    return QString("%1 %2 %3 %4 ").arg(preString(username)).arg(online_state).arg(ipAdd).arg(port);
+    return QString("%1 %2 %3 %4 ").arg(p_name()).arg(online_state).arg(ipAdd).arg(port);
 }

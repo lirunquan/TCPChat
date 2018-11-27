@@ -3,6 +3,7 @@
 #include "user.h"
 #include "filetransmit.h"
 #include <QMessageBox>
+
 #include <QTextStream>
 #include <QtNetwork>
 
@@ -28,6 +29,8 @@ quint16 port_num;
 QString ip_send, ip_recv;
 QString requestString = "";
 QString m_name;
+QString recv_name;
+int recv_state;//1:online,0:offline
 QString m_ques,m_answ;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -35,8 +38,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setGeometry(0,0,400,300);
-    ui->frame_2->setVisible(false);
+    this->setGeometry(100,100,400,300);
+    ui->fontComboBox->setVisible(false);
+    ui->boldButton->setVisible(false);
+    ui->italicButton->setVisible(false);
+    ui->underlineButton->setVisible(false);
+    ui->comboBox->setVisible(false);
+    ui->chatWidget->setVisible(false);
+    ui->c_message_send->setEnabled(false);
+    ui->c_file_send->setEnabled(false);
     ui->stackedWidget->setCurrentIndex(0);
     connect(ui->r_username, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_password, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
@@ -112,6 +122,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
                 else if("##AcceptSending" == QString(buffer)){
                     sendOrReceiver = true;
+                    FileTransmit* dia = new FileTransmit(this);
+                    dia->show();
                 }
                 else if("##RefuseSending" == QString(buffer)){
                     QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
@@ -144,6 +156,8 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             else if("##AcceptSending" == QString(buffer)){
                 sendOrReceiver = true;
+                FileTransmit* dial = new FileTransmit(this);
+                dial->show();
             }
             else if("##RefuseSending" == QString(buffer)){
                 QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
@@ -167,46 +181,45 @@ MainWindow::MainWindow(QWidget *parent) :
         if(mode[0] == Login){
             if(!isFind){                
                 if("login success" == QString(buffer).section("##",1,1)){
-                    //login success, open the chat window
-                    this->setGeometry (0,0,60,80);
-                    tcpSocket->write("##RequestForUserInfo");
+                    logOutput("login success");
+                    this->onSuccess();
+                    m_name = readString(QString(buffer).section("##",2,2));
                     mode[0] = Chat;
                 }
                 else if("register success" == QString(buffer).section("##",1,1)){
-                    //window hints the infomation
-                    tcpSocket->write("##RequestForUserInfo");
+                    onSuccess();
+                    m_name = readString(QString(buffer).section("##",2,2));
                     mode[0] = Chat;
                 }
                 else{
                     //window hints the "login/register failed"
-                    //window returns to login
+                    ui->stackedWidget->setCurrentIndex(1);
+                    ui->usernameEdit->setText("");
+                    ui->passwordEdit->setText("");
                     mode[0] = Login;
                 }
             }
             else if("question" == QString(buffer).section("##",1,1)){
                 m_ques = QString(buffer).section("##",2,2);
-                //window change into finding password, change the m_answer
                 ui->stackedWidget->setCurrentIndex(3);
                 ui->f_username->setText(ui->usernameEdit->text());
                 ui->f_question->setText(m_ques);
-
-                //m_answ = QString("answer##%1##").arg(what user input);
-                //m_answ.append(newpassword);
-//                tcpSocket->write(m_answ.toUtf8());
                 isQuestionReturn = true;
             }
             else if("answer is right" == QString(buffer).section("##",1,1)){
-                //hints the login infomation
-                //user has login
-                //password has changed into the new one
-                tcpSocket->write("##RequestForUserInfo");
+                onSuccess();
+                m_name = readString(QString(buffer).section("##",2,2));
                 mode[0] = Chat;
             }
             else if("##answer is wrong" == QString(buffer)){
-
+                QMessageBox::warning(this, "Error", "Answer is wrong.");
+                ui->f_answer->setText("");
+                ui->f_newpw->setText("");
+                ui->f_confirm->setText("");
             }
-            else if(QString("user %1 does not exist").arg(ui->usernameEdit->text()) == QString(buffer)){
-
+            else if(QString("user %1 does not exist").arg(handledString(ui->usernameEdit->text())) == QString(buffer)){
+                QMessageBox::warning(this, "Error", QString("user %1 does not exist").arg(ui->usernameEdit->text()));
+                ui->passwordEdit->setText("");
             }
             else{
                 tcpSocket->write("wrong request");
@@ -246,8 +259,9 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             else{
                 QString c_sender = readString(QString(buffer).section("##",0,0));
-                //show contact sender in the window
-                tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?"), QMessageBox::Yes, QMessageBox::No)){
+                    tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                }
             }
         }
         else if("load users' state" == QString(buffer).section("##",0,0)){
@@ -255,7 +269,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 user[i] = NULL;
             }
             m_size = 0;
-            //window clears the list of users
+            QStandardItemModel* on_model = new QStandardItemModel(this);
+            QStandardItemModel* off_model = new QStandardItemModel(this);
+            ui->c_on_list->setModel(on_model);
+            ui->c_off_list->setModel(off_model);
             m_size = QString(buffer).section("##",1,1).toInt();
             if(m_size > 0){
                 QString userInfo = QString(buffer).section("##",2,2);
@@ -279,16 +296,27 @@ MainWindow::MainWindow(QWidget *parent) :
                     }
                     if(u_state == 1){
                         //users' list add an online user
-                        num_on ++;
+                        if(u_name != m_name){
+                            QStandardItem* item_on = new QStandardItem(u_name);
+                            on_model->appendRow(item_on);
+                            num_on ++;
+                        }
                     }
                     else{
                         //users' list add an offline user
+                        QStandardItem* item_off = new QStandardItem(u_name);
+                        off_model->appendRow(item_off);
                         num_off ++;
                     }
                 }
+                ui->c_on_list->setModel(on_model);
+                ui->c_off_list->setModel(off_model);
+                ui->c_on_label->setText(QString("Online(%1)").arg(num_on));
+                ui->c_off_label->setText(QString("Offline(%1)").arg(num_off));
+                connect(ui->c_on_list, SIGNAL(clicked(QModelIndex)), this, SLOT(online_click(QModelIndex)));
+                connect(ui->c_off_list, SIGNAL(clicked(QModelIndex)), this, SLOT(offline_click(QModelIndex)));
             }
             else{
-                //hints no other users;
                 logOutput("no user in the server.");
             }
             if(!isOffline){
@@ -299,18 +327,21 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         else if("offline message" == QString(buffer).section("&&",0,0)){//handle offline message
             int num = QString(buffer).section("&&",1,1).toInt();//number of offline message
-            for(int m=0; m<num+2; m++){
-                QString single = QString(buffer).section("&&",m,m);
-                QString sender = readString(QString(single).section("##",0,0));//who sended
-                QString message_off = readString(QString(single).section("##",1,1)) ;//content of message
-                QString reciever = readString(QString(single).section("##",2,2)) ;//who will recieve
-                //show the message in the window
+            if(num>0){
+                QString str = "";
+                for(int m=0; m<num+2; m++){
+                    QString single = QString(buffer).section("&&",m,m);
+                    QString sender = readString(QString(single).section("##",0,0));//who sended
+                    QString message_off = readString(QString(single).section("##",1,1)) ;//content of message
+                    QString reciever = readString(QString(single).section("##",2,2)) ;//who will recieve
+                    QString time_sent = QString(single).section("##",3,3);
+                    str.append(QString("%1\n%2: %3\n").arg(time_sent).arg(sender).arg(message_off));
+                }
+                QMessageBox::about(NULL, "Offline message", str);
             }
         }
         else if("##Permission for login" == QString(buffer)){
-//            timer->stop();
-            //window change into login
-//            ui->frame->setVisible(false);
+            mode[0] = Login;
             ui->label->setText("Login");
             ui->label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
             ui->frame_2->setVisible(true);
@@ -323,8 +354,18 @@ MainWindow::MainWindow(QWidget *parent) :
             tcpSocket->write("##Request for login");
 //            timer->start(time_out);
         }
+        else if("##Logout" == QString(buffer)){
+            m_name = "";
+            mode[0] = Login;
+            this->setGeometry(100,100,400,300);
+            ui->chatWidget->setVisible(false);
+            ui->frame->setVisible(true);
+            ui->stackedWidget->setVisible(true);
+            ui->usernameEdit->setText("");
+            ui->passwordEdit->setText("");
+        }
         else{
-            //handle common message, sending "A##message##B" means A sends message to B
+            //handle common message, sending "A##message##B##time" means A sends message to B
             QString sender = readString(QString(buffer).section("##",0,0));
             QString m_common = readString(QString(buffer).section("##",1,1));
             QString reciever = readString(QString(buffer).section("##",2,2));
@@ -375,14 +416,15 @@ void MainWindow::logOutput(QString log)
 }
 void MainWindow::sendMessage(QString sender, QString reciever, QString message)
 {
-    QString sending = handledString(sender).append(QString("##%1##").arg(handledString(message))).append(handledString(reciever));
+    QString sending = handledString(sender).append(
+                QString("##%1##%2##%3").arg(handledString(message))).arg(handledString(reciever)).arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
     tcpSocket->write(sending.toUtf8());
-    logOutput(QString("Sending common message to %1").arg(reciever));
+    logOutput(QString("Sending message to %1").arg(reciever));
 }
 void MainWindow::sendFile()
 {
     tcpSocket_client->write("##RequestForSendingFile");
-
+    mode[0] = Client;
 }
 void MainWindow::userLogin(QString username, QString password)
 {
@@ -410,6 +452,31 @@ QString MainWindow::readString(QString str)
     string.replace(QString("/&"), QString("&"));
     return string;
 }
+void MainWindow::onSuccess()
+{
+    this->setGeometry (100,100,710,520);
+    QMenu* menu = ui->menuBar->addMenu("...");
+    QAction* logout = menu->addAction("Logout");
+    QAction* exit = menu->addAction("Exit");
+    connect(logout, &QAction::triggered, [=](){
+        if(QMessageBox::Yes == QMessageBox::information(this, "Logout", "Are you sure to logout?", QMessageBox::Yes, QMessageBox::No)){
+            tcpSocket->write(QString("logout##%1").arg(handledString(m_name)).toUtf8());
+        }
+    });
+    connect(exit, &QAction::triggered, [=](){
+        if(QMessageBox::Yes == QMessageBox::information(this, "Exit", "Are you sure to exit?", QMessageBox::Yes, QMessageBox::No)){
+            this->exit();
+            this->close();
+        }
+    });
+    ui->frame->setVisible(false);
+    ui->stackedWidget->setVisible(false);
+    ui->chatWidget->setVisible(true);
+    ui->c_file_send->setEnabled(false);
+    ui->recver_label->setText("");
+    recv_name = "";recv_state = 0;
+    tcpSocket->write("##RequestForUserInfo");
+}
 void MainWindow::exit()
 {
     for(int i=0; i<m_size; i++){
@@ -436,6 +503,11 @@ void MainWindow::on_toRegisterBtn_clicked()
     ui->usernameEdit->setText("");
     ui->passwordEdit->setText("");
     ui->stackedWidget->setCurrentIndex(2);
+    ui->r_answer->setText("");
+    ui->r_username->setText("");
+    ui->r_password->setText("");
+    ui->r_confirm->setText("");
+    ui->r_question->setCurrentText("");
     registerEnabled();
 }
 
@@ -462,8 +534,8 @@ void MainWindow::on_registerBtn_clicked()
         ui->r_username->setText("");
         ui->r_password->setText("");
     }
-    else if(ui->r_password->text().length() <= 6){
-        QMessageBox::warning(this, "Error", "Password is required to be longer than 6.");
+    else if(ui->r_password->text().length() <= 5){
+        QMessageBox::warning(this, "Error", "Password is required to be not shorter than 6.");
         ui->r_password->setText("");
         ui->r_confirm->setText("");
     }
@@ -519,6 +591,7 @@ void MainWindow::on_forgotBtn_clicked()
     if(!ui->usernameEdit->text().isEmpty()){
 //        ui->stackedWidget->setCurrentIndex(3);
         tcpSocket->write(QString("find##%1").arg(handledString(ui->usernameEdit->text())).toUtf8());
+        isFind = true;
     }
 
 }
@@ -550,4 +623,39 @@ void MainWindow::on_f_cancel_clicked()
     ui->f_answer->setText("");
     ui->f_newpw->setText("");
 
+}
+
+void MainWindow::on_c_file_send_clicked()
+{
+    sendFile();
+}
+
+void MainWindow::on_c_message_send_clicked()
+{
+    ui->msgBrowser->append(QObject::tr("<p align=right>%1 I:</p>").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
+    ui->msgBrowser->append(QObject::tr("<p align=right>%1</p>").arg(ui->msgEdit->toPlainText()));
+    sendMessage(m_name, ui->msgEdit->toPlainText(), recv_name);
+}
+void MainWindow::online_click(QModelIndex index)
+{
+    recv_name = index.data().toString();
+    recv_state = 1;
+    ui->recver_label->setText(recv_name);
+    ui->msgBrowser->append(QString("To %1").arg(recv_name));
+    ui->c_file_send->setEnabled(true);
+    ui->c_message_send->setEnabled(true);
+}
+void MainWindow::offline_click(QModelIndex index)
+{
+    recv_name = index.data().toString();
+    recv_state = 0;
+    ui->recver_label->setText(recv_name);
+    ui->msgBrowser->append(QString("<h2 align=center>--To %1--</h2>").arg(recv_name));
+    ui->c_file_send->setEnabled(false);
+    ui->c_message_send->setEnabled(true);
+}
+
+void MainWindow::on_msgBrowser_textChanged()
+{
+    ui->msgBrowser->moveCursor(QTextCursor::End);
 }

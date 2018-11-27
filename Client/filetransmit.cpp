@@ -33,11 +33,20 @@ FileTransmit::FileTransmit(QWidget *parent) :
 {
     ui->setupUi(this);
     if(sendOrReceiver){
+        ui->choose->setVisible(true);
+        ui->frame_2->setVisible(true);
+        ui->frame->setGeometry(10,170,431,141);
+        ui->exit->setGeometry(350,320,89,25);
         udpSocketServer = new QUdpSocket(this);
         udpSocketServer->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
         connect(udpSocketServer, SIGNAL(readyRead()), this, SLOT(readData_send()));
     }
     else{
+        ui->choose->setVisible(false);
+        ui->frame_2->setVisible(false);
+        ui->frame->setGeometry(10,10,431,141);
+        ui->exit->setGeometry(350, 160, 89, 25);
+        this->setGeometry(500,500,450,200);
         udpSocketClient = new QUdpSocket(this);
         udpSocketClient->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
         udpSocketClient->bind(recvPort);
@@ -94,6 +103,10 @@ void FileTransmit::readData_recv()
             nameOfRecv = path.append("/").append(QString(datagram).section("##",1,1));
             sizeOfRecv = QString(datagram).section("##",2,2).toInt();
             //dialog show filename and size
+            ui->frame_2->setVisible(false);
+            ui->choose->setVisible(false);
+            ui->textBrowser->append(QString("File: %1\ntotal: %2").arg(nameOfRecv).arg(sizeOfRecv));
+            ui->textBrowser->append("File transmission starts.");
             fileRecv.setFileName(nameOfRecv);
             count_recv = 0;
             isTail = false;
@@ -107,6 +120,9 @@ void FileTransmit::readData_recv()
             totTime.start();
             sec_recver = 0;
             //progressbar->maxmum,minimum,value
+            ui->progressBar->setMaximum(sizeOfRecv);
+            ui->progressBar->setMinimum(0);
+            ui->progressBar->setValue(0);
             if(!fileRecv.open(QIODevice::WriteOnly)){
                 udpSocketClient->writeDatagram("##Failed to open file", senderHost, senderPort);
                 return;
@@ -141,11 +157,13 @@ void FileTransmit::readData_recv()
                                 if(i == N-1){
                                     count_recv++;
                                     //progressbar->setvalue(count_recv*N*package_size)
+                                    ui->progressBar->setValue(count_recv*N*package_size);
                                     int ctimer = count_recver.elapsed();
                                     if(ctimer > interval){
                                         count_recver.start();
                                         double speed = ((sec_recver+1)*N*package_size*1000/ctimer/1024);
                                         //text speed
+                                        ui->speed->setText(QString("%1 kB/s").arg(speed));
                                         sec_recver = 0;
                                     }
                                     else{
@@ -165,7 +183,10 @@ void FileTransmit::readData_recv()
                         if(isTail){
                             udpSocketClient->writeDatagram("##File all recieved", senderHost, senderPort);
                             //progressbar setvalue(sizerecv)
+                            ui->progressBar->setValue(sizeOfRecv);
                             //button enable
+                            ui->textBrowser->append(QString("File transmission completed."));
+                            ui->exit->setEnabled(true);
                             isFirst = true;
                             int sum = totTime.msecsTo(QTime::currentTime());
                             int sum_s = sum/1000;
@@ -173,17 +194,10 @@ void FileTransmit::readData_recv()
                             if(sum_s >= 60){
                                 int sum_m = sum_s/60;
                                 sum_s = sum_s%60;
-                                QMessageBox::warning(this,
-                                                     "Transmission completed",
-                                                     QString("Takes %1 (min) %2 (sec). \nAverage Speed: %3 kb/s").arg(sum_m).arg(sum_s).arg(speed_s),
-                                                     QMessageBox::Yes);
-                //                close();
+                                ui->textBrowser->append(QString("Takes %1 (min) %2 (sec). \nAverage Speed: %3 kb/s").arg(sum_m).arg(sum_s).arg(speed_s));
                             }
                             else{
-                                QMessageBox::warning(this,
-                                                     "Transmission completed",
-                                                     QString("Take %1 (sec). \nAverage Speed: %2 kb/s").arg(sum_s).arg(speed_s),
-                                                     QMessageBox::Yes);
+                                ui->textBrowser->append(QString("Take %1 (sec). \nAverage Speed: %2 kb/s").arg(sum_s).arg(speed_s));
                             }
                             close();
                         }
@@ -195,6 +209,7 @@ void FileTransmit::readData_recv()
             }
             else{
                 if(isFirst){
+                    ui->textBrowser->append(QString("File %1 written completed.").arg(nameOfRecv));
                     isFirst = true;
                 }
                 qDebug() << "file all saved"<<endl;
@@ -241,11 +256,13 @@ void FileTransmit::readData_send()
         else if("##Failed to open file" == datagram){
             fileToSend.close();
             //text
+            ui->textBrowser->append(QString("File %1 opened failed.").arg(nameOfSend));
             return ;
         }
         else if("##File all recieved" == datagram){
             isAllConfirmed = true;
             //progressbar,button,text
+            ui->progressBar->setValue(sizeOfSend);
             timer->stop();
             delete timer;
             qDebug()<<"All transmitted";
@@ -255,17 +272,13 @@ void FileTransmit::readData_send()
             if(sum_sec >= 60){
                 int sum_min = sum_sec/60;
                 sum_sec = sum_sec%60;
-                QMessageBox::warning(this,
-                                     "Transmission completed",
-                                     QString("Takes %1 (min) %2 (sec). \nAverage Speed: %3 kb/s").arg(sum_min).arg(sum_sec).arg(speed),
-                                     QMessageBox::Yes);
-//                close();
+                ui->textBrowser->append("File transmission completed.");
+                ui->textBrowser->append(QString("Takes %1 (min) %2 (sec). \nAverage Speed: %3 kb/s").arg(sum_min).arg(sum_sec).arg(speed));
+
             }
             else{
-                QMessageBox::warning(this,
-                                     "Transmission completed",
-                                     QString("Take %1 (sec). \nAverage Speed: %2 kb/s").arg(sum_sec).arg(speed),
-                                     QMessageBox::Yes);
+                ui->textBrowser->append("File transmission completed.");
+                ui->textBrowser->append(QString("Take %1 (sec). \nAverage Speed: %2 kb/s").arg(sum_sec).arg(speed));
             }
             close();
         }
@@ -306,11 +319,12 @@ void FileTransmit::readData_send()
             if(isPass){
                 count_send ++ ;
                 //progressbar
+                ui->progressBar->setValue(count_send*N*package_size);
                 int ctimes = count_sender.elapsed();
                 if(ctimes > interval){
                     count_sender.start();
                     double speed = ((sec_sender+1)*N*package_size*1000/ctimes/1024);
-                    //text
+                    ui->speed->setText(QString("%1 kb/s").arg(speed));
                     sec_sender = 0;
                 }
                 else{

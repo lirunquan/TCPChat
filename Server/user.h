@@ -16,6 +16,7 @@ public:
     bool setState(QString m_name);
     QString toString();
     QString preString(QString str);
+    QString p_name();
     QString username;
     QString password;
     QString question;

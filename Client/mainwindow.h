@@ -8,6 +8,9 @@
 #include <QDateTime>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QModelIndex>
 
 #define IP "120.78.66.220"
 #define PORT 8800
@@ -52,6 +55,15 @@ private slots:
     void on_f_send_clicked();
 
     void on_f_cancel_clicked();
+
+    void on_c_file_send_clicked();
+
+    void on_c_message_send_clicked();
+
+    void onSuccess();
+    void online_click(QModelIndex index);
+    void offline_click(QModelIndex index);
+    void on_msgBrowser_textChanged();
 
 private:
     Ui::MainWindow *ui;

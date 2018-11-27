@@ -94,9 +94,9 @@ void Server::init()
                 if("login" == QString(buffer).section("##", 0 ,0)){
                     logOutput("login");
                     bool isPass = false;
+                    QString s1 = readString(QString(buffer).section("##",1,1));
+                    QString s2 = readString(QString(buffer).section("##",2,2));
                     for(int i=0; i<User_data->size; i++){
-                        QString s1 = readString(QString(buffer).section("##",1,1));
-                        QString s2 = readString(QString(buffer).section("##",2,2));
                         if(User_data->u[i]->username == s1 &&
                                 User_data->u[i]->password == s2){
                             isPass = true;
@@ -134,12 +134,12 @@ void Server::init()
                         int newPort = qrand()%10000+10000;
                         User_data->u[User_data->size] = new User(m_name, m_password, m_question, m_answer, 1, ip, newPort);
                         User_data->size ++ ;
-                        tcpSocket[index]->write(QString("##register success##%1").arg(m_name).toUtf8());
+                        tcpSocket[index]->write(QString("##register success##%1").arg(QString(buffer).section("##",1,1)).toUtf8());
                         saveToFile();
                         logOutput(QString("%1 register success").arg(m_name));
                     }
                     else{
-                        tcpSocket[index]->write(QString("##register failed##%1 is already used").arg(m_name).toUtf8());
+                        tcpSocket[index]->write(QString("##register failed##%1 is already used").arg(QString(buffer).section("##",1,1)).toUtf8());
                         logOutput(QString("failed: %1 is already used").arg(m_name));
                         mode[index] = Chat;
                     }
@@ -157,12 +157,12 @@ void Server::init()
                         }
                     }
                     if(!isReturn){
-                        tcpSocket[index]->write(QString("user %1 does not exist").arg(readString(findName)).toUtf8());
+                        tcpSocket[index]->write(QString("user %1 does not exist").arg(findName).toUtf8());
                         mode[index] = Chat;
                     }
                 }
                 else if("answer" == QString(buffer).section("##",0,0)){
-                    QString answer = QString(buffer).section("##",1,1);
+                    QString answer = readString(QString(buffer).section("##",1,1));
                     if(User_data->u[indexOf]->answer == answer){
                         logOutput(QString("user %1 find correctly, is online now").arg(User_data->u[indexOf]->username));
                         QString new_pass = readString(QString(buffer).section("##",2,2));
@@ -170,7 +170,7 @@ void Server::init()
                         User_data->u[indexOf]->online_state = 1;
                         User_data->u[indexOf]->ipAdd = ip;
                         User_data->u[indexOf]->port = qrand()%10000+10000;
-                        tcpSocket[index]->write(QString("##answer is right##%1").arg(User_data->u[indexOf]->username).toUtf8());/*.arg(User_data->u[indexOf]->password).toUtf8())*/
+                        tcpSocket[index]->write(QString("##answer is right##%1").arg(User_data->u[indexOf]->p_name()).toUtf8());
                         saveToFile();
                     }
                     else{
@@ -199,9 +199,25 @@ void Server::init()
                     tcpSocket[index]->write("##Permission for login");
                     mode[index] = AcceptLogin;
                 }
+                else if("logout" == QString(buffer).section("##",1,1)){
+                    QString name = readString(QString(buffer).section("##",1,1));
+                    for(int i=0;i<User_data->size;i++){
+                        if(User_data->u[i]->username == name){
+                            logOutput(QString("%1 is disconnected.").arg(User_data->u[i]->username));
+                            User_data->u[i]->online_state = 0;
+                            break;
+                        }
+                    }
+                    if(index < cur-1){
+                        for(int i=index; i<cur-1; i++){
+                            tcpSocket[i] = tcpSocket[i+1];
+                        }
+                    }
+                    cur --;
+                    userStateUpdate();
+                }
                 else{
-                    QString s = "common message"+QString(buffer);
-                    logOutput(s);
+                    logOutput(QString(buffer));
                     QString reciever = readString(QString(buffer).section("##", 2,2));
                     for(int i=0;i<User_data->size; i++){
                         logOutput(QString("%1 %2 %3").arg(i).arg(User_data->size).arg(User_data->u[i]->username));
