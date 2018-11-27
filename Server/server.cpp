@@ -206,18 +206,16 @@ void Server::init()
                         if(User_data->u[i]->username == name){
                             logOutput(QString("%1 is disconnected.").arg(User_data->u[i]->username));
                             User_data->u[i]->online_state = 0;
+                            tcpSocket[index]->write("##Logout");
                             break;
                         }
                     }
-                    if(i<User_data->size){
-                        tcpSocket[index]->write("##Login");
-                    }
-                    if(index < cur-1){
-                        for(int j=index; j<cur-1; j++){
-                            tcpSocket[j] = tcpSocket[j+1];
-                        }
-                    }
-                    cur --;
+//                    if(index < cur-1){
+//                        for(int j=index; j<cur-1; j++){
+//                            tcpSocket[j] = tcpSocket[j+1];
+//                        }
+//                    }
+//                    cur --;
                     userStateUpdate();
                 }
                 else{
