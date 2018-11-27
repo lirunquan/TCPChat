@@ -370,6 +370,8 @@ MainWindow::MainWindow(QWidget *parent) :
             QString m_common = readString(QString(buffer).section("##",1,1));
             QString reciever = readString(QString(buffer).section("##",2,2));
             //show message in the window
+            ui->msgBrowser->append(QString("%1 %2: \n").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(sender));
+            ui->msgBrowser->append(QString(m_common));
         }
     });
 }
