@@ -201,20 +201,23 @@ void Server::init()
                 }
                 else if("logout" == QString(buffer).section("##",0,0)){
                     QString name = readString(QString(buffer).section("##",1,1));
-                    for(int i=0;i<User_data->size;i++){
+                    int i;
+                    for(i=0;i<User_data->size;i++){
                         if(User_data->u[i]->username == name){
                             logOutput(QString("%1 is disconnected.").arg(User_data->u[i]->username));
                             User_data->u[i]->online_state = 0;
-                            tcpSocket[index]->write("##Logout");
                             break;
                         }
                     }
-//                    if(index < cur-1){
-//                        for(int i=index; i<cur-1; i++){
-//                            tcpSocket[i] = tcpSocket[i+1];
-//                        }
-//                    }
-//                    cur --;
+                    if(i<User_data->size){
+                        tcpSocket[index]->write("##Login");
+                    }
+                    if(index < cur-1){
+                        for(int j=index; j<cur-1; j++){
+                            tcpSocket[j] = tcpSocket[j+1];
+                        }
+                    }
+                    cur --;
                     userStateUpdate();
                 }
                 else{
