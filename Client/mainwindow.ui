@@ -768,7 +768,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>67</width>
+       <width>121</width>
        <height>17</height>
       </rect>
      </property>
@@ -791,7 +791,7 @@
       <rect>
        <x>0</x>
        <y>230</y>
-       <width>70</width>
+       <width>121</width>
        <height>17</height>
       </rect>
      </property>
@@ -827,9 +827,6 @@
     <zorder>c_off_label</zorder>
     <zorder>recver_label</zorder>
    </widget>
-   <zorder>chatWidget</zorder>
-   <zorder>stackedWidget</zorder>
-   <zorder>frame</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

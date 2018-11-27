@@ -264,7 +264,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
             }
         }
-        else if("load users' state" == QString(buffer).section("##",0,0)){
+        else if("load users' states" == QString(buffer).section("##",0,0)){
             for(int i=0; i<M; i++){
                 user[i] = NULL;
             }
