@@ -144,7 +144,7 @@
        <bool>false</bool>
       </property>
       <property name="flat">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
      </widget>
      <zorder>forgotBtn</zorder>
@@ -827,6 +827,9 @@
     <zorder>c_off_label</zorder>
     <zorder>recver_label</zorder>
    </widget>
+   <zorder>chatWidget</zorder>
+   <zorder>stackedWidget</zorder>
+   <zorder>frame</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
