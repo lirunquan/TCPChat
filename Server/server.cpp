@@ -199,7 +199,7 @@ void Server::init()
                     tcpSocket[index]->write("##Permission for login");
                     mode[index] = AcceptLogin;
                 }
-                else if("logout" == QString(buffer).section("##",1,1)){
+                else if("logout" == QString(buffer).section("##",0,0)){
                     QString name = readString(QString(buffer).section("##",1,1));
                     for(int i=0;i<User_data->size;i++){
                         if(User_data->u[i]->username == name){
