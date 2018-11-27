@@ -207,6 +207,7 @@ void Server::init()
                             logOutput(QString("%1 is disconnected.").arg(User_data->u[i]->username));
                             User_data->u[i]->online_state = 0;
                             tcpSocket[index]->write("##Logout");
+                            mode[0] = AcceptLogin;
                             break;
                         }
                     }
@@ -216,7 +217,7 @@ void Server::init()
 //                        }
 //                    }
 //                    cur --;
-                    userStateUpdate();
+//                    userStateUpdate();
                 }
                 else{
                     logOutput(QString(buffer));
