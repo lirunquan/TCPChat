@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->chatWidget->setVisible(false);
     ui->c_message_send->setEnabled(false);
     ui->c_file_send->setEnabled(false);
+    ui->f_cancel->setVisible(false);
     ui->stackedWidget->setCurrentIndex(0);
     connect(ui->r_username, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_password, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
@@ -168,7 +169,7 @@ MainWindow::MainWindow(QWidget *parent) :
         //tips for connected success
         logOutput("connected success");
         ui->label->setText("Connecting to server  ...  Done.");
-        isOffline = false;
+//        isOffline = false;
         mode[0] = Chat;
     });
     connect(tcpSocket, &QTcpSocket::disconnected, [=](){
@@ -203,7 +204,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 m_ques = QString(buffer).section("##",2,2);
                 ui->stackedWidget->setCurrentIndex(3);
                 ui->f_username->setText(ui->usernameEdit->text());
-                ui->f_question->setText(m_ques);
+                ui->f_question->setText(m_ques.replace("_", " "));
                 isQuestionReturn = true;
             }
             else if("answer is right" == QString(buffer).section("##",1,1)){
@@ -321,12 +322,13 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             if(!isOffline){
                 isOffline = true;
-                tcpSocket->write(QString("##Offline message##%1").arg(handledString(m_name)).toUtf8());
+                tcpSocket->write(QString("Offline message##%1").arg(handledString(m_name)).toUtf8());
                 logOutput("send offline message.");
             }
         }
         else if("offline message" == QString(buffer).section("&&",0,0)){//handle offline message
             int num = QString(buffer).section("&&",1,1).toInt();//number of offline message
+            qDebug()<<num;
             if(num>0){
                 QString str = "";
                 for(int m=0; m<num+2; m++){
@@ -335,7 +337,8 @@ MainWindow::MainWindow(QWidget *parent) :
                     QString message_off = readString(QString(single).section("##",1,1)) ;//content of message
                     QString reciever = readString(QString(single).section("##",2,2)) ;//who will recieve
                     QString time_sent = QString(single).section("##",3,3);
-                    str.append(QString("%1\n%2: %3\n").arg(time_sent).arg(sender).arg(message_off));
+                    str += QString("%1\n%2: %3\n").arg(time_sent).arg(sender).arg(message_off);
+                    qDebug()<<str;
                 }
                 QMessageBox::about(NULL, "Offline message", str);
             }
@@ -357,7 +360,10 @@ MainWindow::MainWindow(QWidget *parent) :
         else if("##Logout" == QString(buffer)){
             m_name = "";
             mode[0] = Login;
+            tcpSocket->write("##Request for login");
             this->setGeometry(100,100,400,300);
+            ui->menuBar->clear();
+            ui->msgBrowser->setText("");
             ui->chatWidget->setVisible(false);
             ui->frame->setVisible(true);
             ui->stackedWidget->setVisible(true);
@@ -456,8 +462,10 @@ QString MainWindow::readString(QString str)
 }
 void MainWindow::onSuccess()
 {
+    isOffline = false;
     this->setGeometry (100,100,710,520);
-    QMenu* menu = ui->menuBar->addMenu("...");
+//    ui->menuBar->clear();
+    QMenu* menu = ui->menuBar->addMenu("Menu");
     QAction* logout = menu->addAction("Logout");
     QAction* exit = menu->addAction("Exit");
     connect(logout, &QAction::triggered, [=](){
@@ -552,7 +560,7 @@ void MainWindow::on_registerBtn_clicked()
     else{
         userRegister(ui->r_username->text(),
                      ui->r_password->text(),
-                     ui->r_question->currentText(),
+                     ui->r_question->currentText().replace(" ","_"),
                      ui->r_answer->text());
     }
 }
@@ -624,7 +632,7 @@ void MainWindow::on_f_cancel_clicked()
     ui->f_question->setText("");
     ui->f_answer->setText("");
     ui->f_newpw->setText("");
-
+    ui->stackedWidget->setCurrentIndex(1);
 }
 
 void MainWindow::on_c_file_send_clicked()
@@ -637,12 +645,12 @@ void MainWindow::on_c_message_send_clicked()
     if(!ui->msgEdit->toPlainText().isEmpty()){
         ui->msgBrowser->append(QString("%1 I:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
         ui->msgBrowser->append(QString("%1").arg(ui->msgEdit->toPlainText()));
-        ui->msgEdit->setText("");
-        sendMessage(m_name, ui->msgEdit->toHtml(), recv_name);
+        sendMessage(m_name, QString(ui->msgEdit->toPlainText()), recv_name);
 //        logOutput(handledString(ui->msgEdit->toPlainText()));
 //        logOutput(ui->msgEdit->toPlainText());
-        qDebug()<<ui->msgEdit->placeholderText();
-        qDebug()<<handledString(ui->msgEdit->toHtml());
+        qDebug()<<QString("%1").arg(ui->msgEdit->toPlainText());
+//        qDebug()<<handledString(ui->msgEdit->toHtml());
+        ui->msgEdit->setText("");
     }
     else{
         QMessageBox::warning(NULL, "", "Can not send empty message.");

@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="page_5"/>
     <widget class="QWidget" name="page">
@@ -446,7 +446,7 @@
      <widget class="QPushButton" name="f_send">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>140</x>
         <y>160</y>
         <width>89</width>
         <height>25</height>
@@ -640,6 +640,13 @@
        <height>120</height>
       </rect>
      </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;abcd&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
     </widget>
     <widget class="QToolButton" name="italicButton">
      <property name="geometry">
@@ -827,6 +834,9 @@
     <zorder>c_off_label</zorder>
     <zorder>recver_label</zorder>
    </widget>
+   <zorder>chatWidget</zorder>
+   <zorder>stackedWidget</zorder>
+   <zorder>frame</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
