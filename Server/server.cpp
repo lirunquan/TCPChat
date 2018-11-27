@@ -208,6 +208,7 @@ void Server::init()
                             User_data->u[i]->online_state = 0;
                             tcpSocket[index]->write("##Logout");
                             mode[0] = AcceptLogin;
+                            userStateUpdate();
                             break;
                         }
                     }
@@ -217,7 +218,6 @@ void Server::init()
 //                        }
 //                    }
 //                    cur --;
-//                    userStateUpdate();
                 }
                 else{
                     logOutput(QString(buffer));
