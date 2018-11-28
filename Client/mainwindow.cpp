@@ -39,16 +39,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setGeometry(100,100,400,300);
-    ui->fontComboBox->setVisible(false);
-    ui->boldButton->setVisible(false);
-    ui->italicButton->setVisible(false);
-    ui->underlineButton->setVisible(false);
-    ui->comboBox->setVisible(false);
+    ui->fontComboBox->setVisible(true);
+    ui->boldButton->setVisible(true);
+    ui->italicButton->setVisible(true);
+    ui->underlineButton->setVisible(true);
+    ui->comboBox->setVisible(true);
     ui->chatWidget->setVisible(false);
     ui->c_message_send->setEnabled(false);
     ui->c_file_send->setEnabled(false);
     ui->f_cancel->setVisible(false);
     ui->stackedWidget->setCurrentIndex(0);
+    ui->msgEdit->setFocusPolicy(Qt::StrongFocus);
+    ui->msgEdit->setFocus();
+    ui->msgEdit->installEventFilter(this);
     connect(ui->r_username, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_password, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_confirm, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
@@ -168,7 +171,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(tcpSocket, &QTcpSocket::connected, [=](){
         //tips for connected success
         logOutput("connected success");
-        ui->label->setText("Connecting to server  ...  Done.");
+        ui->label->setText("正在连接服务器....连接成功！");
 //        isOffline = false;
         mode[0] = Chat;
     });
@@ -347,11 +350,11 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         else if("##Permission for login" == QString(buffer)){
             mode[0] = Login;
-            ui->label->setText("Login");
+            ui->label->setText("登录");
             ui->label->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
             ui->frame_2->setVisible(true);
             ui->stackedWidget->setCurrentIndex(1);
-            setWindowTitle("Login");
+            setWindowTitle("TCPChat--Login");
             ui->loginBtn->setEnabled(false);
             ui->forgotBtn->setEnabled(false);
         }
@@ -466,18 +469,18 @@ QString MainWindow::readString(QString str)
 void MainWindow::onSuccess()
 {
     isOffline = false;
-    this->setGeometry (100,100,710,520);
+    this->setGeometry (100,100,950,640);
 //    ui->menuBar->clear();
-    QMenu* menu = ui->menuBar->addMenu("Menu");
-    QAction* logout = menu->addAction("Logout");
-    QAction* exit = menu->addAction("Exit");
+    QMenu* menu = ui->menuBar->addMenu("菜单");
+    QAction* logout = menu->addAction("账号下线");
+    QAction* exit = menu->addAction("退出");
     connect(logout, &QAction::triggered, [=](){
-        if(QMessageBox::Yes == QMessageBox::information(this, "Logout", "Are you sure to logout?", QMessageBox::Yes, QMessageBox::No)){
+        if(QMessageBox::Yes == QMessageBox::information(this, "Logout", "是否确定下线？", QMessageBox::Yes, QMessageBox::No)){
             tcpSocket->write(QString("logout##%1").arg(handledString(m_name)).toUtf8());
         }
     });
     connect(exit, &QAction::triggered, [=](){
-        if(QMessageBox::Yes == QMessageBox::information(this, "Exit", "Are you sure to exit?", QMessageBox::Yes, QMessageBox::No)){
+        if(QMessageBox::Yes == QMessageBox::information(this, "Exit", "是否确定退出？", QMessageBox::Yes, QMessageBox::No)){
             this->exit();
             this->close();
         }
@@ -505,14 +508,14 @@ void MainWindow::exit()
 void MainWindow::on_loginBtn_clicked()
 {
     userLogin(ui->usernameEdit->text(), ui->passwordEdit->text());
-//    QMessageBox::warning(this, "Error", "Please enter your username.");
+//    QMessageBox::warning(this, "Error", "请输入你的账户名");
 }
 
 
 void MainWindow::on_toRegisterBtn_clicked()
 {
-    setWindowTitle("Register");
-    ui->label->setText("Register");
+    setWindowTitle("TCPChat--Register");
+    ui->label->setText("注册");
     ui->usernameEdit->setText("");
     ui->passwordEdit->setText("");
     ui->stackedWidget->setCurrentIndex(2);
@@ -642,6 +645,18 @@ void MainWindow::on_c_file_send_clicked()
 {
     sendFile();
 }
+bool MainWindow::eventFilter(QObject *target, QEvent *event)
+{
+    if(target == ui->msgEdit)
+    {
+        if(event->type() == QEvent::KeyPress)
+        {
+              on_c_message_send_clicked();
+               return true;
+        }
+    }
+    return QWidget::eventFilter(target,event);
+}
 
 void MainWindow::on_c_message_send_clicked()
 {
@@ -656,7 +671,7 @@ void MainWindow::on_c_message_send_clicked()
         ui->msgEdit->setText("");
     }
     else{
-        QMessageBox::warning(NULL, "", "Can not send empty message.");
+        QMessageBox::warning(NULL, "", "不能发送空消息！");
     }
 }
 void MainWindow::online_click(QModelIndex index)
@@ -681,4 +696,43 @@ void MainWindow::offline_click(QModelIndex index)
 void MainWindow::on_msgBrowser_textChanged()
 {
     ui->msgBrowser->moveCursor(QTextCursor::End);
+}
+
+
+
+void MainWindow::on_boldButton_clicked(bool checked)
+{
+    if(checked)
+        ui->msgEdit->setFontWeight (QFont::Bold);
+    else
+        ui->msgEdit->setFontWeight (QFont::Normal);
+    ui->msgEdit->setFocus ();
+}
+
+void MainWindow::on_italicButton_clicked(bool checked)
+{
+
+        ui->msgEdit->setFontItalic (checked);
+
+    ui->msgEdit->setFocus ();
+}
+
+void MainWindow::on_underlineButton_clicked(bool checked)
+{
+
+        ui->msgEdit->setFontUnderline (checked);
+
+    ui->msgEdit->setFocus ();
+}
+
+void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
+{
+    ui->msgEdit->setFontPointSize (arg1.toDouble ());
+    ui->msgEdit->setFocus ();
+}
+
+void MainWindow::on_fontComboBox_currentFontChanged(const QFont &f)
+{
+    ui->msgEdit->setCurrentFont (f);
+    ui->msgEdit->setFocus ();
 }

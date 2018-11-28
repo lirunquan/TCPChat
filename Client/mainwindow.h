@@ -35,6 +35,8 @@ public:
     QString handledString(QString str);
     QString readString(QString str);
     void exit();
+protected:
+    bool eventFilter(QObject *target, QEvent *event);
 private slots:
     void registerEnabled();
 
@@ -64,6 +66,22 @@ private slots:
     void online_click(QModelIndex index);
     void offline_click(QModelIndex index);
     void on_msgBrowser_textChanged();
+
+
+
+    void on_boldButton_clicked(bool checked);
+
+    void on_italicButton_clicked(bool checked);
+
+    void on_underlineButton_clicked(bool checked);
+
+    void on_comboBox_currentIndexChanged(const QString &arg1);
+
+    void on_boldButton_clicked();
+
+    void on_italicButton_clicked();
+
+    void on_fontComboBox_currentFontChanged(const QFont &f);
 
 private:
     Ui::MainWindow *ui;
