@@ -197,6 +197,7 @@ MainWindow::MainWindow(QWidget *parent) :
                     ui->stackedWidget->setCurrentIndex(1);
                     ui->usernameEdit->setText("");
                     ui->passwordEdit->setText("");
+                    tcpSocket->write("##Request for login");
                     mode[0] = Login;
                 }
             }
