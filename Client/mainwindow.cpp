@@ -258,6 +258,7 @@ MainWindow::MainWindow(QWidget *parent) :
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
             if(m_name != readString(QString(buffer).section("##",2,2))){
                 //show wrong request message in the window
+                mode[0] = Chat;
             }
             else{
                 QString c_sender = readString(QString(buffer).section("##",0,0));
@@ -432,7 +433,8 @@ void MainWindow::sendMessage(QString sender, QString message, QString reciever)
 }
 void MainWindow::sendFile()
 {
-    tcpSocket_client->write("##RequestForSendingFile");
+    tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name));
+//    tcpSocket_client->write("##RequestForSendingFile");
     mode[0] = Client;
 }
 void MainWindow::userLogin(QString username, QString password)
