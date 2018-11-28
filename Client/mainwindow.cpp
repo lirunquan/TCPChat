@@ -195,13 +195,26 @@ MainWindow::MainWindow(QWidget *parent) :
                     m_name = readString(QString(buffer).section("##",2,2));
                     mode[0] = Chat;
                 }
-                else{
+                else if("login failed" == QString(buffer).section("##",1,1)){
                     //window hints the "login/register failed"
+                    ui->statusBar->showMessage("Login failed");
                     ui->stackedWidget->setCurrentIndex(1);
                     ui->usernameEdit->setText("");
                     ui->passwordEdit->setText("");
                     tcpSocket->write("##Request for login");
                     mode[0] = Login;
+                }
+                else if("register failed" == QString(buffer).section("##",1,1)){
+                    //window hints the "login/register failed"
+                    ui->statusBar->showMessage("Login failed");
+                    ui->stackedWidget->setCurrentIndex(1);
+                    ui->usernameEdit->setText("");
+                    ui->passwordEdit->setText("");
+                    tcpSocket->write("##Request for login");
+                    mode[0] = Login;
+                }
+                else{
+                    logOutput("wrong message from server");
                 }
             }
             else if("question" == QString(buffer).section("##",1,1)){
@@ -232,32 +245,36 @@ MainWindow::MainWindow(QWidget *parent) :
                 logOutput("something wrong");
             }
         }
-        else if(mode[0] == Client){
-            if("AcceptContact" == QString(buffer).section("##",1,1)){
-                if(m_name == readString(QString(buffer).section("##", 2,2))){
-                    QString connect_name = readString(QString(buffer).section("##",0,0));
-                    QString myIP = "";
-                    qint16 myPort = 0;
-                    for(int i=0;i<m_size;i++){
-                        if(user[i]->username == connect_name){
-                            myIP = user[i]->ip;
-                            myPort = user[i]->port;
-                        }
-                    }
-                    if(!myIP.isEmpty() && myPort!=0){
-                        tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
-                        if(tcpSocket_client->isOpen()){
-                            ip_recv = myIP;
-                        }
-                        mode[1] = Chat;
+//        else if(mode[0] == Client){
+        else if("AcceptContact" == QString(buffer).section("##",1,1)){
+            if(m_name == readString(QString(buffer).section("##", 2,2))){
+                QString connect_name = readString(QString(buffer).section("##",0,0));
+                QString myIP = "";
+                qint16 myPort = 0;
+                for(int i=0;i<m_size;i++){
+                    if(user[i]->username == connect_name){
+                        myIP = user[i]->ip;
+                        myPort = user[i]->port;
                     }
                 }
-                else{
-                    QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
+                if(!myIP.isEmpty() && myPort!=0){
+                    tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
+                    if(tcpSocket_client->isOpen()){
+                        ip_recv = myIP;
+                    }
+                    mode[1] = Chat;
                 }
+            }
+            else{
+                QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
             }
             mode[0] = Chat;
         }
+        else if("RefuseContact" == QString(buffer).section("##",1,1)){
+            QMessageBox::information(this, "Refuse", "He refused contacting.");
+            mode[0] = Chat;
+        }
+//        }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
             if(m_name != readString(QString(buffer).section("##",2,2))){
                 //show wrong request message in the window
@@ -267,6 +284,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 QString c_sender = readString(QString(buffer).section("##",0,0));
                 if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?"), QMessageBox::Yes, QMessageBox::No)){
                     tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                }
+                else{
+                    tcpSocket->write(QString("%1##RefuseContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                    mode[0] = Chat;
                 }
             }
         }
@@ -364,7 +385,7 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         else if("##Logout" == QString(buffer)){
             m_name = "";
-            mode[0] = Login;
+//            mode[0] = Login;
             tcpSocket->write("##Request for login");
             this->setGeometry(100,100,400,300);
             ui->menuBar->clear();
@@ -381,7 +402,7 @@ MainWindow::MainWindow(QWidget *parent) :
             QString m_common = readString(QString(buffer).section("##",1,1));
             QString reciever = readString(QString(buffer).section("##",2,2));
             //show message in the window
-            ui->msgBrowser->append(QString("%1 %2: \n").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(sender));
+            ui->msgBrowser->append(QString("%1 %2:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(sender));
             ui->msgBrowser->append(QString(m_common));
         }
     });
@@ -438,7 +459,7 @@ void MainWindow::sendFile()
 {
     tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name).toUtf8());
 //    tcpSocket_client->write("##RequestForSendingFile");
-    mode[0] = Client;
+//    mode[0] = Client;
 }
 void MainWindow::userLogin(QString username, QString password)
 {
@@ -679,7 +700,7 @@ void MainWindow::online_click(QModelIndex index)
     recv_name = index.data().toString();
     recv_state = 1;
     ui->recver_label->setText(recv_name);
-    ui->msgBrowser->append(QString("To %1").arg(recv_name));
+    ui->msgBrowser->append(QString("--To %1--").arg(recv_name));
     ui->c_file_send->setEnabled(true);
     ui->c_message_send->setEnabled(true);
 }
