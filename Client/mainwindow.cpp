@@ -192,13 +192,26 @@ MainWindow::MainWindow(QWidget *parent) :
                     m_name = readString(QString(buffer).section("##",2,2));
                     mode[0] = Chat;
                 }
-                else{
+                else if("login failed" == QString(buffer).section("##",1,1)){
                     //window hints the "login/register failed"
+                    ui->statusBar->showMessage("Login failed");
                     ui->stackedWidget->setCurrentIndex(1);
                     ui->usernameEdit->setText("");
                     ui->passwordEdit->setText("");
                     tcpSocket->write("##Request for login");
                     mode[0] = Login;
+                }
+                else if("register failed" == QString(buffer).section("##",1,1)){
+                    //window hints the "login/register failed"
+                    ui->statusBar->showMessage("Login failed");
+                    ui->stackedWidget->setCurrentIndex(1);
+                    ui->usernameEdit->setText("");
+                    ui->passwordEdit->setText("");
+                    tcpSocket->write("##Request for login");
+                    mode[0] = Login;
+                }
+                else{
+                    logOutput("wrong message from server");
                 }
             }
             else if("question" == QString(buffer).section("##",1,1)){
@@ -369,7 +382,7 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         else if("##Logout" == QString(buffer)){
             m_name = "";
-            mode[0] = Login;
+//            mode[0] = Login;
             tcpSocket->write("##Request for login");
             this->setGeometry(100,100,400,300);
             ui->menuBar->clear();
