@@ -433,7 +433,7 @@ void MainWindow::sendMessage(QString sender, QString message, QString reciever)
 }
 void MainWindow::sendFile()
 {
-    tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name));
+    tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name).toUtf8());
 //    tcpSocket_client->write("##RequestForSendingFile");
     mode[0] = Client;
 }
