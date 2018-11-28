@@ -229,35 +229,36 @@ MainWindow::MainWindow(QWidget *parent) :
                 logOutput("something wrong");
             }
         }
-        else if(mode[0] == Client){
-            if("AcceptContact" == QString(buffer).section("##",1,1)){
-                if(m_name == readString(QString(buffer).section("##", 2,2))){
-                    QString connect_name = readString(QString(buffer).section("##",0,0));
-                    QString myIP = "";
-                    qint16 myPort = 0;
-                    for(int i=0;i<m_size;i++){
-                        if(user[i]->username == connect_name){
-                            myIP = user[i]->ip;
-                            myPort = user[i]->port;
-                        }
-                    }
-                    if(!myIP.isEmpty() && myPort!=0){
-                        tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
-                        if(tcpSocket_client->isOpen()){
-                            ip_recv = myIP;
-                        }
-                        mode[1] = Chat;
+//        else if(mode[0] == Client){
+        else if("AcceptContact" == QString(buffer).section("##",1,1)){
+            if(m_name == readString(QString(buffer).section("##", 2,2))){
+                QString connect_name = readString(QString(buffer).section("##",0,0));
+                QString myIP = "";
+                qint16 myPort = 0;
+                for(int i=0;i<m_size;i++){
+                    if(user[i]->username == connect_name){
+                        myIP = user[i]->ip;
+                        myPort = user[i]->port;
                     }
                 }
-                else{
-                    QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
+                if(!myIP.isEmpty() && myPort!=0){
+                    tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
+                    if(tcpSocket_client->isOpen()){
+                        ip_recv = myIP;
+                    }
+                    mode[1] = Chat;
                 }
             }
-            else if("RefuseContact" == QString(buffer).section("##",1,1)){
-                QMessageBox::information(this, "Refuse", "He refused contacting.");
+            else{
+                QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
             }
             mode[0] = Chat;
         }
+        else if("RefuseContact" == QString(buffer).section("##",1,1)){
+            QMessageBox::information(this, "Refuse", "He refused contacting.");
+            mode[0] = Chat;
+        }
+//        }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
             if(m_name != readString(QString(buffer).section("##",2,2))){
                 //show wrong request message in the window
@@ -442,7 +443,7 @@ void MainWindow::sendFile()
 {
     tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name).toUtf8());
 //    tcpSocket_client->write("##RequestForSendingFile");
-    mode[0] = Client;
+//    mode[0] = Client;
 }
 void MainWindow::userLogin(QString username, QString password)
 {
