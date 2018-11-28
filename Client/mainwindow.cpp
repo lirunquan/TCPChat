@@ -538,25 +538,25 @@ void MainWindow::on_registerBtn_clicked()
 //    qDebug()<<ui->r_question->currentText();
     QChar c = ui->r_username->text().at(0);
     if(ui->r_username->text().isEmpty()){
-        QMessageBox::warning(this, "Error", "Username is required.");
+        QMessageBox::warning(this, "错误", "用户名为空！");
     }
     else if(!c.isLetterOrNumber()){
-        QMessageBox::warning(this, "Error", "Invalid username.");
+        QMessageBox::warning(this, "错误", "无效用户名！");
         ui->r_username->setText("");
         ui->r_password->setText("");
     }
     else if(ui->r_password->text().length() <= 5){
-        QMessageBox::warning(this, "Error", "Password is required to be not shorter than 6.");
+        QMessageBox::warning(this, "错误", "密码要求六位以上！");
         ui->r_password->setText("");
         ui->r_confirm->setText("");
     }
     else if(ui->r_confirm->text().isEmpty() || ui->r_confirm->text() != ui->r_password->text()){
-        QMessageBox::warning(this, "Error", "Please confirm your password.");
+        QMessageBox::warning(this, "错误", "请确认你的密码！");
         ui->r_password->setText("");
         ui->r_confirm->setText("");
     }
     else if(ui->r_answer->text().isEmpty()){
-        QMessageBox::warning(this, "Error", "Please enter your answer.");
+        QMessageBox::warning(this, "错误", "请输入你的问题答案！");
     }
     else{
         userRegister(ui->r_username->text(),
@@ -610,16 +610,16 @@ void MainWindow::on_forgotBtn_clicked()
 void MainWindow::on_f_send_clicked()
 {
     if(ui->f_answer->text().isEmpty()){
-        QMessageBox::warning(this, "Error", "Please enter your answer.");
+        QMessageBox::warning(this, "错误", "请输入你的问题答案！");
     }
     else if(ui->f_newpw->text().isEmpty()){
-        QMessageBox::warning(this, "Error", "Please enter your new password.");
+        QMessageBox::warning(this, "错误", "请输入你的新密码！");
     }
     else if(ui->f_confirm->text().isEmpty()){
-        QMessageBox::warning(this, "Error", "Please confirm your password.");
+        QMessageBox::warning(this, "错误", "请确认你的密码！");
     }
     else if(ui->f_confirm->text() != ui->f_newpw->text()){
-        QMessageBox::warning(this, "Error", "The two passwords don't agree.");
+        QMessageBox::warning(this, "错误", "两次密码输入不一致");
     }
     else{
         m_answ = QString("answer##%1##").arg(handledString(ui->f_answer->text())).append(handledString(ui->f_newpw->text()));
