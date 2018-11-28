@@ -220,7 +220,7 @@ void Server::init()
 //                    cur --;
                 }
                 else{
-                    logOutput(QString(buffer));
+//                    logOutput(QString(buffer));
                     QString reciever = readString(QString(buffer).section("##", 2,2));
                     for(int i=0;i<User_data->size; i++){
                         logOutput(QString("%1 %2 %3").arg(i).arg(User_data->size).arg(User_data->u[i]->username));
