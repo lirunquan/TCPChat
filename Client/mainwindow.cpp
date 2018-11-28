@@ -253,6 +253,9 @@ MainWindow::MainWindow(QWidget *parent) :
                     QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
                 }
             }
+            else if("RefuseContact" == QString(buffer).section("##",1,1)){
+                QMessageBox::information(this, "Refuse", "He refused contacting.");
+            }
             mode[0] = Chat;
         }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
@@ -264,6 +267,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 QString c_sender = readString(QString(buffer).section("##",0,0));
                 if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?"), QMessageBox::Yes, QMessageBox::No)){
                     tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                }
+                else{
+                    tcpSocket->write(QString("%1##RefuseContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                    mode[0] = Chat;
                 }
             }
         }
@@ -378,7 +385,7 @@ MainWindow::MainWindow(QWidget *parent) :
             QString m_common = readString(QString(buffer).section("##",1,1));
             QString reciever = readString(QString(buffer).section("##",2,2));
             //show message in the window
-            ui->msgBrowser->append(QString("%1 %2: \n").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(sender));
+            ui->msgBrowser->append(QString("%1 %2:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(sender));
             ui->msgBrowser->append(QString(m_common));
         }
     });
@@ -664,7 +671,7 @@ void MainWindow::online_click(QModelIndex index)
     recv_name = index.data().toString();
     recv_state = 1;
     ui->recver_label->setText(recv_name);
-    ui->msgBrowser->append(QString("To %1").arg(recv_name));
+    ui->msgBrowser->append(QString("--To %1--").arg(recv_name));
     ui->c_file_send->setEnabled(true);
     ui->c_message_send->setEnabled(true);
 }
