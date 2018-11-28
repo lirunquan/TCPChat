@@ -3,7 +3,7 @@
 #include "user.h"
 #include "filetransmit.h"
 #include <QMessageBox>
-
+#include <QKeyEvent>
 #include <QTextStream>
 #include <QtNetwork>
 
@@ -672,8 +672,11 @@ bool MainWindow::eventFilter(QObject *target, QEvent *event)
     {
         if(event->type() == QEvent::KeyPress)
         {
-              on_c_message_send_clicked();
-               return true;
+            QKeyEvent *k = static_cast<QKeyEvent*>(event);
+            if(k->key()==Qt::Key_Return||k->key()==Qt::Key_Enter){
+                on_c_message_send_clicked();
+                return true;
+            }
         }
     }
     return QWidget::eventFilter(target,event);
