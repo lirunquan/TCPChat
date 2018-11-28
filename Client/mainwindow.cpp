@@ -331,16 +331,16 @@ MainWindow::MainWindow(QWidget *parent) :
             qDebug()<<num;
             if(num>0){
                 QString str = "";
-                for(int m=0; m<num+2; m++){
+                for(int m=2; m<num+2; m++){
                     QString single = QString(buffer).section("&&",m,m);
                     QString sender = readString(QString(single).section("##",0,0));//who sended
                     QString message_off = readString(QString(single).section("##",1,1)) ;//content of message
                     QString reciever = readString(QString(single).section("##",2,2)) ;//who will recieve
                     QString time_sent = QString(single).section("##",3,3);
-                    str += QString("%1\n%2: %3\n").arg(time_sent).arg(sender).arg(message_off);
+                    str += QString("%1\n%2: \n%3\n").arg(time_sent).arg(sender).arg(message_off);
                     qDebug()<<str;
                 }
-                QMessageBox::about(NULL, "Offline message", str);
+                QMessageBox::about(NULL, QString("%1 offline message").arg(num), str);
             }
         }
         else if("##Permission for login" == QString(buffer)){
