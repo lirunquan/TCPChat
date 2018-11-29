@@ -136,7 +136,8 @@ MainWindow::MainWindow(QWidget *parent) :
         });
     });
     connect(tcpSocket_client, &QTcpSocket::connected, [=](){
-
+        logOutput("clients connected for sending file.");
+        mode[1] = Chat;
     });
     connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
         ip_recv.clear();
@@ -245,36 +246,38 @@ MainWindow::MainWindow(QWidget *parent) :
                 logOutput("something wrong");
             }
         }
-//        else if(mode[0] == Client){
-        else if("AcceptContact" == QString(buffer).section("##",1,1)){
-            if(m_name == readString(QString(buffer).section("##", 2,2))){
-                QString connect_name = readString(QString(buffer).section("##",0,0));
-                QString myIP = "";
-                qint16 myPort = 0;
-                for(int i=0;i<m_size;i++){
-                    if(user[i]->username == connect_name){
-                        myIP = user[i]->ip;
-                        myPort = user[i]->port;
+        else if(mode[0] == Client){
+            /*else */if("AcceptContact" == QString(buffer).section("##",1,1)){
+                qDebug() << "accept contact" <<endl;
+                if(m_name == readString(QString(buffer).section("##", 2,2))){
+                    QString connect_name = readString(QString(buffer).section("##",0,0));
+                    QString myIP = "";
+                    qint16 myPort = 0;
+                    for(int i=0;i<m_size;i++){
+                        if(user[i]->username == connect_name){
+                            myIP = user[i]->ip;
+                            myPort = user[i]->port;
+                        }
+                    }
+                    if(!myIP.isEmpty() && myPort!=0){
+                        qDebug() << myIP << " " << myPort << endl;
+                        tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
+                        if(tcpSocket_client->isOpen()){
+                            ip_recv = myIP;
+                        }
+                        mode[1] = Chat;
                     }
                 }
-                if(!myIP.isEmpty() && myPort!=0){
-                    tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
-                    if(tcpSocket_client->isOpen()){
-                        ip_recv = myIP;
-                    }
-                    mode[1] = Chat;
+                else{
+                    QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
                 }
+                mode[0] = Chat;
             }
-            else{
-                QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
+            else if("RefuseContact" == QString(buffer).section("##",1,1)){
+                QMessageBox::information(this, "Refuse", "He refused contacting.");
+                mode[0] = Chat;
             }
-            mode[0] = Chat;
         }
-        else if("RefuseContact" == QString(buffer).section("##",1,1)){
-            QMessageBox::information(this, "Refuse", "He refused contacting.");
-            mode[0] = Chat;
-        }
-//        }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
             if(m_name != readString(QString(buffer).section("##",2,2))){
                 //show wrong request message in the window
@@ -282,7 +285,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             else{
                 QString c_sender = readString(QString(buffer).section("##",0,0));
-                if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?"), QMessageBox::Yes, QMessageBox::No)){
+                if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?").arg(c_sender), QMessageBox::Yes, QMessageBox::No)){
                     tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
                 }
                 else{
@@ -459,7 +462,7 @@ void MainWindow::sendFile()
 {
     tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name).toUtf8());
 //    tcpSocket_client->write("##RequestForSendingFile");
-//    mode[0] = Client;
+    mode[0] = Client;
 }
 void MainWindow::userLogin(QString username, QString password)
 {
