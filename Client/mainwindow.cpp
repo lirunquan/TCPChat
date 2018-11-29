@@ -81,96 +81,9 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     isSet = false;
     tcpSocket = new QTcpSocket(this);
-    tcpServer = new QTcpServer(this);
-    tcpSocket_client = new QTcpSocket(this);
     tcpSocket->connectToHost(QHostAddress(IP), PORT);
     tcpSocket->write("##ChatMode");//send tcp connect request for login
-//    timer->start(time_out);
     ui->label->setText("Connecting to server...");
-//    logOutput("Requset for login");
-//    connect(tcpServer, &QTcpServer::newConnection, [=](){
-//        tcpSocket_client = tcpServer->nextPendingConnection();
-//        QString c_ip = tcpSocket_client->peerAddress().toString().section(":",3,3);
-//        mode[1] = Chat;
-//        logOutput(QString("%1 is connected, number of users: %2").arg(c_ip).arg(m_size));
-//        logOutput(m_name);
-//        for(int i=0; i<m_size; i++){
-//            if(user[i]->ip == c_ip){
-//                ip_recv = c_ip;
-//                logOutput(QString("%1 is connected to localhost").arg(user[i]->username));
-//                break;
-//            }
-//        }
-//        connect(tcpSocket_client, &QTcpSocket::connected, [=](){
-
-//        });
-//        connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
-//            ip_recv.clear();
-//        });
-//        connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
-//            QString buffer = tcpSocket_client->readAll();
-//            logOutput(buffer);
-//            if(mode[1] == Chat){
-//                if("##RequestForSendingFile" == QString(buffer)){
-//                    if(QMessageBox::Yes == QMessageBox::information(
-//                                this, "Request for file transmission", "Do you accept it?", QMessageBox::Yes, QMessageBox::No)){
-//                        tcpSocket_client->write("##AcceptSending");
-//                        logOutput("accept sending");
-//                        sendOrReceiver = false;
-//                        //show dialog of sending file
-//                        FileTransmit *dialogRecv = new FileTransmit(this);
-//                        dialogRecv->show();
-//                    }
-//                    else{
-//                        tcpSocket_client->write("##RefuseSending");
-//                        logOutput("refuse sending");
-//                    }
-//                }
-//                else if("##AcceptSending" == QString(buffer)){
-//                    sendOrReceiver = true;
-//                    FileTransmit* dia = new FileTransmit(this);
-//                    dia->show();
-//                }
-//                else if("##RefuseSending" == QString(buffer)){
-//                    QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
-//                }
-//            }
-//        });
-//    });
-//    connect(tcpSocket_client, &QTcpSocket::connected, [=](){
-//        logOutput("clients connected for sending file.");
-//        mode[1] = Chat;
-//    });
-//    connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
-//        ip_recv.clear();
-//    });
-//    connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
-//        QString buffer = tcpSocket_client->readAll();
-//        logOutput(buffer);
-//        if(mode[1] == Chat){
-//            if("##RequestForSendingFile" == QString(buffer)){
-//                if(QMessageBox::Yes == QMessageBox::information(this, "Request for file transmission", "Do you accept it?", QMessageBox::Yes, QMessageBox::No)){
-//                    tcpSocket_client->write("##AccptSending");
-//                    logOutput("accept sending");
-//                    sendOrReceiver = false;
-//                    FileTransmit* dialog = new FileTransmit(this);
-//                    dialog->show();
-//                }
-//                else{
-//                    tcpSocket_client->write("##RefuseSending");
-//                    logOutput("refuse sending");
-//                }
-//            }
-//            else if("##AcceptSending" == QString(buffer)){
-//                sendOrReceiver = true;
-//                FileTransmit* dial = new FileTransmit(this);
-//                dial->show();
-//            }
-//            else if("##RefuseSending" == QString(buffer)){
-//                QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
-//            }
-//        }
-//    });
     connect(tcpSocket, &QTcpSocket::connected, [=](){
         //tips for connected success
         logOutput("connected success");
@@ -248,7 +161,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
         }
         else if(mode[0] == Client){
-            /*else */if("AcceptContact" == QString(buffer).section("##",1,1)){
+            if("AcceptContact" == QString(buffer).section("##",1,1)){
                 qDebug() << "accept contact" <<endl;
                 if(m_name == readString(QString(buffer).section("##", 2,2))){
                     QString connect_name = readString(QString(buffer).section("##",0,0));
@@ -262,58 +175,22 @@ MainWindow::MainWindow(QWidget *parent) :
                     }
                     if(!myIP.isEmpty() && myPort!=0){
                         qDebug() << myIP << " " << myPort << endl;
-                        tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
-                        connect(tcpSocket_client, &QTcpSocket::connected, [=](){
-                            logOutput("clients connected for sending file.");
-                            mode[1] = Chat;
-                        });
-                        connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
-                            ip_recv.clear();
-                        });
-                        connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
-                            QString buffer = tcpSocket_client->readAll();
-                            logOutput(buffer);
-                            if(mode[1] == Chat){
-                                if("##RequestForSendingFile" == QString(buffer)){
-                                    if(QMessageBox::Yes == QMessageBox::information(this, "Request for file transmission", "Do you accept it?", QMessageBox::Yes, QMessageBox::No)){
-                                        tcpSocket_client->write("##AccptSending");
-                                        logOutput("accept sending");
-                                        sendOrReceiver = false;
-                                        FileTransmit* dialog = new FileTransmit(this);
-                                        dialog->show();
-                                    }
-                                    else{
-                                        tcpSocket_client->write("##RefuseSending");
-                                        logOutput("refuse sending");
-                                    }
-                                }
-                                else if("##AcceptSending" == QString(buffer)){
-                                    sendOrReceiver = true;
-                                    FileTransmit* dial = new FileTransmit(this);
-                                    dial->show();
-                                }
-                                else if("##RefuseSending" == QString(buffer)){
-                                    QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
-                                }
-                            }
-                        });
-                        if(tcpSocket_client->isValid()){
-                            qDebug() << "socket_client connected." << endl ;
-                            ip_recv = myIP;
-                            tcpSocket_client->write("##RequestForSendingFile");
-                        }
-                        mode[1] = Chat;
+                        ip_recv = myIP;
+                        sendOrReceiver = true;
+                        FileTransmit* dialog = new FileTransmit(this);
+                        dialog->show();
                     }
                 }
                 else{
                     QMessageBox::information(NULL, "Warning", "Received wrong connection request.");
                 }
-                mode[0] = Chat;
+//                mode[0] = Chat;
             }
             else if("RefuseContact" == QString(buffer).section("##",1,1)){
                 QMessageBox::information(this, "Refuse", "He refused contacting.");
-                mode[0] = Chat;
+//                mode[0] = Chat;
             }
+//            else if("")
             mode[0] = Chat;
         }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
@@ -325,6 +202,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 QString c_sender = readString(QString(buffer).section("##",0,0));
                 if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?").arg(c_sender), QMessageBox::Yes, QMessageBox::No)){
                     tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                    sendOrReceiver = false;
+                    FileTransmit* dialog = new FileTransmit(this);
+                    dialog->show();
+                    mode[0] = Chat;
                 }
                 else{
                     tcpSocket->write(QString("%1##RefuseContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
@@ -359,57 +240,7 @@ MainWindow::MainWindow(QWidget *parent) :
                     if(!isSet && readString(u_name) == m_name){
                         setWindowTitle(QString("%1 %2:%3").arg(readString(u_name)).arg(u_ip).arg(u_port));
                         port_num = u_port;
-                        tcpServer->listen(QHostAddress::Any, port_num);
                         isSet = true;
-                        connect(tcpServer, &QTcpServer::newConnection, [=](){
-                            tcpSocket_client = tcpServer->nextPendingConnection();
-                            QString c_ip = tcpSocket_client->peerAddress().toString().section(":",3,3);
-                            mode[1] = Chat;
-                            logOutput(QString("%1 is connected, number of users: %2").arg(c_ip).arg(m_size));
-                            logOutput(m_name);
-                            for(int i=0; i<m_size; i++){
-                                if(user[i]->ip == c_ip){
-                                    ip_recv = c_ip;
-                                    logOutput(QString("%1 is connected to localhost").arg(user[i]->username));
-                                    break;
-                                }
-                            }
-                            connect(tcpSocket_client, &QTcpSocket::connected, [=](){
-
-                            });
-                            connect(tcpSocket_client, &QTcpSocket::disconnected, [=](){
-                                ip_recv.clear();
-                            });
-                            connect(tcpSocket_client, &QTcpSocket::readyRead, [=](){
-                                QString buffer = tcpSocket_client->readAll();
-                                logOutput(buffer);
-                                if(mode[1] == Chat){
-                                    if("##RequestForSendingFile" == QString(buffer)){
-                                        if(QMessageBox::Yes == QMessageBox::information(
-                                                    this, "Request for file transmission", "Do you accept it?", QMessageBox::Yes, QMessageBox::No)){
-                                            tcpSocket_client->write("##AcceptSending");
-                                            logOutput("accept sending");
-                                            sendOrReceiver = false;
-                                            //show dialog of sending file
-                                            FileTransmit *dialogRecv = new FileTransmit(this);
-                                            dialogRecv->show();
-                                        }
-                                        else{
-                                            tcpSocket_client->write("##RefuseSending");
-                                            logOutput("refuse sending");
-                                        }
-                                    }
-                                    else if("##AcceptSending" == QString(buffer)){
-                                        sendOrReceiver = true;
-                                        FileTransmit* dia = new FileTransmit(this);
-                                        dia->show();
-                                    }
-                                    else if("##RefuseSending" == QString(buffer)){
-                                        QMessageBox::information(this, "Sorry", "He is inconvenient to recieve the file.");
-                                    }
-                                }
-                            });
-                        });
                     }
                     if(u_state == 1){
                         //users' list add an online user
@@ -469,11 +300,9 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         else if("##ChatMode, waiting request" == QString(buffer)){
             tcpSocket->write("##Request for login");
-//            timer->start(time_out);
         }
         else if("##Logout" == QString(buffer)){
             m_name = "";
-//            mode[0] = Login;
             tcpSocket->write("##Request for login");
             this->setGeometry(100,100,400,300);
             ui->menuBar->clear();
@@ -505,19 +334,9 @@ MainWindow::~MainWindow()
         }
     }
     tcpSocket->close();
-    tcpServer->close();
-    tcpSocket_client->close();
     if(tcpSocket){
         delete tcpSocket;
         tcpSocket = NULL;
-    }
-    if(tcpServer){
-        delete tcpServer;
-        tcpServer = NULL;
-    }
-    if(tcpSocket_client){
-        delete tcpSocket_client;
-        tcpSocket_client = NULL;
     }
     delete ui;
     logOutput("Close Client");
@@ -546,7 +365,6 @@ void MainWindow::sendMessage(QString sender, QString message, QString reciever)
 void MainWindow::sendFile()
 {
     tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name).toUtf8());
-//    tcpSocket_client->write("##RequestForSendingFile");
     mode[0] = Client;
 }
 void MainWindow::userLogin(QString username, QString password)
@@ -579,7 +397,6 @@ void MainWindow::onSuccess()
 {
     isOffline = false;
     this->setGeometry (100,100,950,640);
-//    ui->menuBar->clear();
     QMenu* menu = ui->menuBar->addMenu("菜单");
     QAction* logout = menu->addAction("账号下线");
     QAction* exit = menu->addAction("退出");
@@ -617,7 +434,6 @@ void MainWindow::exit()
 void MainWindow::on_loginBtn_clicked()
 {
     userLogin(ui->usernameEdit->text(), ui->passwordEdit->text());
-//    QMessageBox::warning(this, "Error", "请输入你的账户名");
 }
 
 
@@ -649,7 +465,6 @@ void MainWindow::on_cancelBtn_clicked()
 
 void MainWindow::on_registerBtn_clicked()
 {
-//    qDebug()<<ui->r_question->currentText();
     QChar c = ui->r_username->text().at(0);
     if(ui->r_username->text().isEmpty()){
         QMessageBox::warning(this, "错误", "用户名为空！");
@@ -714,7 +529,6 @@ void MainWindow::on_forgotBtn_clicked()
 {
     ui->label->setText("");
     if(!ui->usernameEdit->text().isEmpty()){
-//        ui->stackedWidget->setCurrentIndex(3);
         tcpSocket->write(QString("find##%1").arg(handledString(ui->usernameEdit->text())).toUtf8());
         isFind = true;
     }
@@ -776,10 +590,7 @@ void MainWindow::on_c_message_send_clicked()
         ui->msgBrowser->append(QString("%1 I:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
         ui->msgBrowser->append(QString("%1").arg(ui->msgEdit->toPlainText()));
         sendMessage(m_name, QString(ui->msgEdit->toPlainText()), recv_name);
-//        logOutput(handledString(ui->msgEdit->toPlainText()));
-//        logOutput(ui->msgEdit->toPlainText());
         qDebug()<<QString("%1").arg(ui->msgEdit->toPlainText());
-//        qDebug()<<handledString(ui->msgEdit->toHtml());
         ui->msgEdit->setText("");
     }
     else{
@@ -798,7 +609,6 @@ void MainWindow::online_click(QModelIndex index)
     ui->c_file_send->setEnabled(true);
     ui->c_message_send->setEnabled(true);
     ui->c_off_list->clearSelection();
-//    ui->c_off_list->setSelectionMode(QAbstractItemView::NoSelection);
 }
 void MainWindow::offline_click(QModelIndex index)
 {
@@ -812,7 +622,6 @@ void MainWindow::offline_click(QModelIndex index)
     ui->c_file_send->setEnabled(false);
     ui->c_message_send->setEnabled(true);
     ui->c_on_list->clearSelection();
-//    ui->c_on_list->setSelectionMode(QAbstractItemView::NoSelection);
 }
 
 void MainWindow::on_msgBrowser_textChanged()

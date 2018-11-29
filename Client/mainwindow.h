@@ -85,9 +85,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QTcpServer* tcpServer;
+//    QTcpServer* tcpServer;
     QTcpSocket* tcpSocket;
-    QTcpSocket* tcpSocket_client;
+//    QTcpSocket* tcpSocket_client;
     QTimer* timer;
 };
 
