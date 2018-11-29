@@ -32,9 +32,13 @@ FileTransmit::FileTransmit(QWidget *parent) :
     ui(new Ui::FileTransmit)
 {
     ui->setupUi(this);
+    ui->exit->setVisible(false);
+    qDebug() << ip_recv ;
     if(sendOrReceiver){
         ui->choose->setVisible(true);
         ui->frame_2->setVisible(true);
+        ui->sizeLine->setReadOnly(true);
+        ui->nameLine->setReadOnly(true);
         ui->frame->setGeometry(10,170,431,141);
         ui->exit->setGeometry(350,320,89,25);
         udpSocketServer = new QUdpSocket(this);
