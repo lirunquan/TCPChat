@@ -52,6 +52,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->msgEdit->setFocusPolicy(Qt::StrongFocus);
     ui->msgEdit->setFocus();
     ui->msgEdit->installEventFilter(this);
+    connect(ui->c_on_list, SIGNAL(clicked(QModelIndex)), this, SLOT(online_click(QModelIndex)));
+    connect(ui->c_off_list, SIGNAL(clicked(QModelIndex)), this, SLOT(offline_click(QModelIndex)));
     connect(ui->r_username, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_password, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
     connect(ui->r_confirm, SIGNAL(textChanged(QString)), this, SLOT(registerEnabled()));
@@ -203,7 +205,7 @@ MainWindow::MainWindow(QWidget *parent) :
                     ui->usernameEdit->setText("");
                     ui->passwordEdit->setText("");
                     tcpSocket->write("##Request for login");
-                    mode[0] = Login;
+                    mode[0] = Chat;
                 }
                 else if("register failed" == QString(buffer).section("##",1,1)){
                     //window hints the "login/register failed"
@@ -212,7 +214,7 @@ MainWindow::MainWindow(QWidget *parent) :
                     ui->usernameEdit->setText("");
                     ui->passwordEdit->setText("");
                     tcpSocket->write("##Request for login");
-                    mode[0] = Login;
+                    mode[0] = Chat;
                 }
                 else{
                     logOutput("wrong message from server");
@@ -263,6 +265,7 @@ MainWindow::MainWindow(QWidget *parent) :
                         qDebug() << myIP << " " << myPort << endl;
                         tcpSocket_client->connectToHost(QHostAddress(myIP), myPort);
                         if(tcpSocket_client->isOpen()){
+                            qDebug() << "socket_client connected." << endl ;
                             ip_recv = myIP;
                         }
                         mode[1] = Chat;
@@ -343,8 +346,6 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->c_off_list->setModel(off_model);
                 ui->c_on_label->setText(QString("Online(%1)").arg(num_on));
                 ui->c_off_label->setText(QString("Offline(%1)").arg(num_off));
-                connect(ui->c_on_list, SIGNAL(clicked(QModelIndex)), this, SLOT(online_click(QModelIndex)));
-                connect(ui->c_off_list, SIGNAL(clicked(QModelIndex)), this, SLOT(offline_click(QModelIndex)));
             }
             else{
                 logOutput("no user in the server.");
@@ -705,19 +706,29 @@ void MainWindow::online_click(QModelIndex index)
 {
     recv_name = index.data().toString();
     recv_state = 1;
+    QString s = "--To "+recv_name+"--";
+    if(recv_name != ui->recver_label->text()){
+        ui->msgBrowser->append(s);
+    }
     ui->recver_label->setText(recv_name);
-    ui->msgBrowser->append(QString("--To %1--").arg(recv_name));
     ui->c_file_send->setEnabled(true);
     ui->c_message_send->setEnabled(true);
+    ui->c_off_list->clearSelection();
+//    ui->c_off_list->setSelectionMode(QAbstractItemView::NoSelection);
 }
 void MainWindow::offline_click(QModelIndex index)
 {
     recv_name = index.data().toString();
     recv_state = 0;
+    QString s = "--To "+recv_name+"--";
+    if(recv_name != ui->recver_label->text()){
+        ui->msgBrowser->append(s);
+    }
     ui->recver_label->setText(recv_name);
-    ui->msgBrowser->append(QString("--To %1--").arg(recv_name));
     ui->c_file_send->setEnabled(false);
     ui->c_message_send->setEnabled(true);
+    ui->c_on_list->clearSelection();
+//    ui->c_on_list->setSelectionMode(QAbstractItemView::NoSelection);
 }
 
 void MainWindow::on_msgBrowser_textChanged()
