@@ -267,6 +267,7 @@ MainWindow::MainWindow(QWidget *parent) :
                         if(tcpSocket_client->isOpen()){
                             qDebug() << "socket_client connected." << endl ;
                             ip_recv = myIP;
+//                            tcpSocket_client->write("##RequestForSendingFile");
                         }
                         mode[1] = Chat;
                     }
@@ -280,6 +281,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 QMessageBox::information(this, "Refuse", "He refused contacting.");
                 mode[0] = Chat;
             }
+            mode[0] = Chat;
         }
         else if("RequestForContact" == QString(buffer).section("##",1,1)){//A##RequestForContact##B  A wants to contact B
             if(m_name != readString(QString(buffer).section("##",2,2))){
