@@ -34,7 +34,9 @@ SendDialog::SendDialog(QWidget *parent) :
     ui->sizeLine->setReadOnly(true);
     udpSender->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
     connect(udpSender, SIGNAL(readyRead()), this, SLOT(readDatagrams()));
-    connect(timer, &QTimer::timeout, this, SLOT(sendData()));
+    connect(timer, &QTimer::timeout, this, [=](){
+        sendData();
+    });
     ui->textBrowser->setText("");
     numOfPackeages = 0;
 }
@@ -48,6 +50,7 @@ void SendDialog::sendData()
 {
     for(int i=0; i<numOfPackeages; i++){
         if(!isConfirm[i]){
+//            quint16 port = 7755;
             udpSender->writeDatagram(send_packages[i], QHostAddress(ip_recv), recv_port);
         }
     }
@@ -173,7 +176,7 @@ void SendDialog::on_choose_clicked()
     QString path = QFileDialog::getOpenFileName(this, "Choose", "../");
     if(!path.isEmpty()){
         ui->send->setEnabled(true);
-        info = new QFileInfo(path);
+        QFileInfo info(path);
         filename = info.fileName();
         ui->nameLine->setText(filename);
         fileSize = info.size();
@@ -203,5 +206,5 @@ void SendDialog::on_send_clicked()
 {
     ui->send->setEnabled(false);
     ui->choose->setEnabled(false);
-    udpSender->writeDatagram(QString("FileHead##%1##%2").arg(filename).arg(fileSize), QHostAddress(ip_recv), recv_port);
+    udpSender->writeDatagram(QString("FileHead##%1##%2").arg(filename).arg(fileSize).toUtf8(), QHostAddress(ip_recv), recv_port);
 }

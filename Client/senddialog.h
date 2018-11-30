@@ -33,12 +33,12 @@ private:
     Ui::SendDialog *ui;
     QUdpSocket* udpSender;
     QString filename;
-    QFileInfo info;
+//    QFileInfo info;
     QFile fileSend;
     quint64 fileSize;
     quint64 sendedSize;
     QHostAddress recvHost;
-    const quint16 recv_port = 7755;
+    quint16 recv_port = 7755;
     QTimer* timer;
 };
 

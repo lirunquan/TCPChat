@@ -18,8 +18,8 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     udpRecver = new QUdpSocket(this);
-    udpRecver.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
-    udpRecver.bind(recv_port);
+    udpRecver->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
+    udpRecver->bind(recv_port);
     connect(udpRecver, SIGNAL(readyRead()), this, SLOT(readDatagrams()));
     ui->nameLine->setText("");
     ui->sizeLine->setText("");
@@ -111,7 +111,7 @@ void ReceiveDialog::readDatagrams()
                                 if(isRecved[i]){
                                     fileRecv.write(recv_packages[i], recv_packages[i].size());
                                     isWritten[i] = true;
-                                    if(recv_packages[i] < package_size){
+                                    if(recv_packages[i].size() < package_size){
                                         isTail = true;
                                     }
                                     if(i == N-1){
@@ -145,7 +145,7 @@ void ReceiveDialog::readDatagrams()
                                 int sum_s = sum/1000;
                                 if(sum_s > 60){
                                     int sum_m = sum_s/60;
-                                    sum_s = sum_%60;
+                                    sum_s = sum_s%60;
                                     ui->textBrowser->append("File transmission completed.");
                                     ui->textBrowser->append(QString("Totally cost %1 min %2 sec").arg(sum_m).arg(sum_s));
                                 }

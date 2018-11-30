@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "user.h"
-#include "filetransmit.h"
+//#include "filetransmit.h"
 #include "senddialog.h"
 #include "receivedialog.h"
 #include <QMessageBox>
