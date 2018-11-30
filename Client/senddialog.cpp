@@ -38,6 +38,7 @@ SendDialog::SendDialog(QWidget *parent) :
         sendData();
     });
     ui->textBrowser->setText("");
+    qDebug() << ip_recv;
     numOfPackeages = 0;
 }
 

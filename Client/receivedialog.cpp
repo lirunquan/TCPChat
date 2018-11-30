@@ -29,7 +29,7 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
     ui->frame_2->setVisible(false);
     ui->frame_3->setVisible(true);
     ui->frame_3->setGeometry(10,20,431,101);
-    this->setGeometry(100,100,450,130);
+    this->setGeometry(300,150,450,130);
 //    setWindowFlags(Qt::WindowTitleHint);
 }
 
@@ -71,7 +71,7 @@ void ReceiveDialog::readDatagrams()
                 }
                 else{
                     udpRecver->writeDatagram("##FileHeadRecved", senderHost, senderPort);
-                    this->setGeometry(100,100,450,300);
+                    this->setGeometry(300,150,450,300);
                     ui->frame->setVisible(true);
                     ui->frame_2->setVisible(true);
                     ui->nameLine->setText(path);
