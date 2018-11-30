@@ -27,16 +27,22 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     user.cpp \
-    filetransmit.cpp
+    filetransmit.cpp \
+    senddialog.cpp \
+    receivedialog.cpp
 
 HEADERS += \
         mainwindow.h \
     user.h \
-    filetransmit.h
+    filetransmit.h \
+    senddialog.h \
+    receivedialog.h
 
 FORMS += \
         mainwindow.ui \
-    filetransmit.ui
+    filetransmit.ui \
+    senddialog.ui \
+    receivedialog.ui
 
 RESOURCES += \
     tubiao.qrc

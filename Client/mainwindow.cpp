@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "user.h"
 #include "filetransmit.h"
+#include "senddialog.h"
+#include "receivedialog.h"
 #include <QMessageBox>
 #include <QKeyEvent>
 #include <QTextStream>
@@ -177,7 +179,7 @@ MainWindow::MainWindow(QWidget *parent) :
                         qDebug() << myIP << " " << myPort << endl;
                         ip_recv = myIP;
                         sendOrReceiver = true;
-                        FileTransmit* dialog = new FileTransmit(this);
+                        SendDialog* dialog = new SendDialog(this);
                         dialog->show();
                     }
                 }
@@ -200,7 +202,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?").arg(c_sender), QMessageBox::Yes, QMessageBox::No)){
                     tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
                     sendOrReceiver = false;
-                    FileTransmit* dialog = new FileTransmit(this);
+                    ReceiveDialog* dialog = new ReceiveDialog(this);
                     dialog->show();
                     mode[0] = Chat;
                 }
