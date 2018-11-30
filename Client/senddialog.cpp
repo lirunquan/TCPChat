@@ -212,6 +212,6 @@ void SendDialog::on_send_clicked()
 {
     ui->send->setEnabled(false);
     ui->choose->setEnabled(false);
-    udpSender->connectToHost(QHostAddress(ip_recv), recv_port);
+//    udpSender->connectToHost(QHostAddress(ip_recv), recv_port);
     udpSender->writeDatagram(QString("FileHead##%1##%2").arg(filename).arg(fileSize).toUtf8(), QHostAddress(ip_recv), recv_port);
 }
