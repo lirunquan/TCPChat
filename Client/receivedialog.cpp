@@ -19,7 +19,7 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
     ui->setupUi(this);
     udpRecver = new QUdpSocket(this);
     udpRecver->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
-    udpRecver->bind(recv_port);
+    udpRecver->bind(QHostAddress::LocalHost, recv_port);
     connect(udpRecver, SIGNAL(readyRead()), this, SLOT(readDatagrams()));
     ui->nameLine->setText("");
     ui->sizeLine->setText("");
