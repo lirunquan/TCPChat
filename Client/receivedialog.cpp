@@ -30,7 +30,7 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
     ui->frame_3->setVisible(true);
     ui->frame_3->setGeometry(10,20,431,101);
     this->setGeometry(100,100,450,130);
-    setWindowFlags(Qt::WindowTitleHint);
+//    setWindowFlags(Qt::WindowTitleHint);
 }
 
 ReceiveDialog::~ReceiveDialog()
@@ -42,11 +42,11 @@ void ReceiveDialog::readDatagrams()
 {
     while(udpRecver->hasPendingDatagrams()){
         QByteArray datagram;
-        qDebug() << datagram;
         datagram.resize(udpRecver->pendingDatagramSize());
         QHostAddress senderHost;
         quint16 senderPort;
         udpRecver->readDatagram(datagram.data(), datagram.size(), &senderHost, &senderPort);
+        qDebug() << datagram;
         if("FileHead" == QString(datagram).section("##",0,0)){
             filename = QString(datagram).section("##",1,1);
             fileSize = QString(datagram).section("##",2,2).toInt();
@@ -166,6 +166,7 @@ void ReceiveDialog::readDatagrams()
             else{
                 if(isFirst){
                     ui->textBrowser->append("File written completed.");
+
                     isFirst = false;
                 }
             }

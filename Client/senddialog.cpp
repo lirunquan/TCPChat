@@ -180,7 +180,12 @@ void SendDialog::on_choose_clicked()
         filename = info.fileName();
         ui->nameLine->setText(filename);
         fileSize = info.size();
-        ui->sizeLine->setText(QString("%1 KB").arg(fileSize/1024));
+        if(fileSize>=1024){
+            ui->sizeLine->setText(QString("%1 KB").arg(fileSize/1024));
+        }
+        else{
+            ui->sizeLine->setText(QString("%1 B").arg(fileSize));
+        }
         sendedSize = 0;
         fileSend.setFileName(path);
         if(!fileSend.open(QIODevice::ReadOnly)){
@@ -191,7 +196,7 @@ void SendDialog::on_choose_clicked()
             ui->send->setEnabled(true);
             ui->textBrowser->append("Ready to send file.");
             ui->textBrowser->append(QString("File: %1").arg(ui->nameLine->text()));
-            ui->textBrowser->append(QString("Total: %1").arg(ui->nameLine->text()));
+            ui->textBrowser->append(QString("Total: %1").arg(ui->sizeLine->text()));
             ui->progressBar->setMaximum(fileSize);
             ui->progressBar->setMinimum(0);
             ui->progressBar->setValue(0);
