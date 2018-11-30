@@ -1,5 +1,6 @@
 #include "receivedialog.h"
 #include "ui_receivedialog.h"
+extern QString ip_send;
 const int N = 8;
 const int package_size = 1024;
 const int interval = 1000;
@@ -20,7 +21,9 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
     udpRecver = new QUdpSocket(this);
     udpRecver->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
     udpRecver->bind(QHostAddress::LocalHost, recv_port);
-    connect(udpRecver, SIGNAL(readyRead()), this, SLOT(readDatagrams()));
+    connect(udpRecver, &QUdpSocket::readyRead, this, [=](){
+        readDatagrams();
+    });
     ui->nameLine->setText("");
     ui->sizeLine->setText("");
     ui->progressBar->setValue(0);

@@ -238,7 +238,7 @@ MainWindow::MainWindow(QWidget *parent) :
                     user[i] = u_new;
                     if(!isSet && readString(u_name) == m_name){
                         setWindowTitle(QString("%1 %2:%3").arg(readString(u_name)).arg(u_ip).arg(u_port));
-                        ip_recv = u_ip;
+                        ip_send = u_ip;
                         port_num = u_port;
                         isSet = true;
                     }

@@ -33,7 +33,9 @@ SendDialog::SendDialog(QWidget *parent) :
     ui->nameLine->setReadOnly(true);
     ui->sizeLine->setReadOnly(true);
     udpSender->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
-    connect(udpSender, SIGNAL(readyRead()), this, SLOT(readDatagrams()));
+    connect(udpSender, &QUdpSocket::readyRead, this, [=](){
+        readDatagrams();
+    });
     connect(timer, &QTimer::timeout, this, [=](){
         sendData();
     });
@@ -51,7 +53,6 @@ void SendDialog::sendData()
 {
     for(int i=0; i<numOfPackeages; i++){
         if(!isConfirm[i]){
-//            quint16 port = 7755;
             udpSender->writeDatagram(send_packages[i], QHostAddress(ip_recv), recv_port);
         }
     }
