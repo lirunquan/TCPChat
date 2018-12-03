@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QTimer>
 #include <QtNetwork>
+#include <QUdpSocket>
 
 const int M = 20;
 
@@ -31,6 +32,7 @@ public slots:
 private:
     QTcpServer* tcpServer;
     QTcpSocket* tcpSocket[M];
+    QUdpSocket* udpSocket;
     QTimer timer;
 };
 

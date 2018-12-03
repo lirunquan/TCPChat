@@ -207,20 +207,11 @@ void Server::init()
                             logOutput(QString("%1 is disconnected.").arg(User_data->u[i]->username));
                             User_data->u[i]->online_state = 0;
                             tcpSocket[index]->write("##Logout");
-//                            mode[0] = AcceptLogin;
-//                            userStateUpdate();
                             break;
                         }
                     }
-//                    if(index < cur-1){
-//                        for(int j=index; j<cur-1; j++){
-//                            tcpSocket[j] = tcpSocket[j+1];
-//                        }
-//                    }
-//                    cur --;
                 }
                 else{
-//                    logOutput(QString(buffer));
                     QString reciever = readString(QString(buffer).section("##", 2,2));
                     for(int i=0;i<User_data->size; i++){
                         logOutput(QString("%1 %2 %3").arg(i).arg(User_data->size).arg(User_data->u[i]->username));
@@ -251,6 +242,60 @@ void Server::init()
                 }
             }
         });
+    });
+    udpSocket = new QUdpSocket(this);
+    udpSocket->bind(7755);
+    QString senderIP = "";
+    QString recverIP = "";
+    int sendPort = -1;
+    int recvPort = -1;
+    QString code = "";
+    connect(udpSocket, &QUdpSocket::readyRead, [&](){
+        while(udpSocket->hasPendingDatagrams()){
+            QByteArray datagram;
+            datagram.resize(udpSocket->pendingDatagramSize());
+            QHostAddress address;
+            quint16 port;
+            udpSocket->readDatagram(datagram.data(), datagram.size(), &address, &port);
+            logOutput(QString("%1##%2##%3").arg(datagram.data()).arg(address.toString()).arg(port));
+            if("##FileSender" == QString(datagram).section("##",0,0)){
+                senderIP = address.toString();
+                sendPort = port;
+                QString str = QString(datagram).section("##",1,1);
+                if(!recverIP.isEmpty()&&recvPort>=0){
+                    if(code == str){
+                        udpSocket->writeDatagram(QString("GotReceiver##%1##%2").arg(recverIP).arg(recvPort).toUtf8(), address, port);
+                    }
+                    else{
+                        code = str;
+                    }
+                }
+                else{
+                    code = str;
+                    logOutput("waiting for recver");
+                    udpSocket->writeDatagram(QString("NoReceiver").toUtf8(), address, port);
+                }
+            }
+            else if("##FileReceiver" == QString(datagram)){
+                recverIP = address.toString();
+                recvPort = port;
+                QString str = QString(datagram).section("##",1,1);
+                if(!senderIP.isEmpty()&&recvPort>=0){
+                    if(str == code){
+                        logOutput("correct recver");
+                        udpSocket->writeDatagram(QString("GotSender##%1##%2").arg(senderIP).arg(sendPort).toUtf8(), address, port);
+                    }
+                    else{
+                        code = str;
+                    }
+                }
+                else{
+                    code = str;
+                    logOutput("waiting for sender.");
+                    udpSocket->writeDatagram(QString("NoSender").toUtf8(), address, port);
+                }
+            }
+        }
     });
 }
 void Server::start(QTcpServer* tcp, int port)
