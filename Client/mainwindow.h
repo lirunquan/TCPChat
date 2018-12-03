@@ -77,17 +77,11 @@ private slots:
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
 
-//    void on_boldButton_clicked();
-
-//    void on_italicButton_clicked();
-
     void on_fontComboBox_currentFontChanged(const QFont &f);
 
 private:
     Ui::MainWindow *ui;
-//    QTcpServer* tcpServer;
     QTcpSocket* tcpSocket;
-//    QTcpSocket* tcpSocket_client;
     QTimer* timer;
 };
 

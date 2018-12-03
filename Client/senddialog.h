@@ -37,9 +37,8 @@ private:
     QFile fileSend;
     quint64 fileSize;
     quint64 sendedSize;
-    QHostAddress recvHost;
-    quint16 recv_port = 7755;
     QTimer* timer;
+    bool match;
 };
 
 #endif // SENDDIALOG_H

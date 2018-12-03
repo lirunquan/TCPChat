@@ -258,7 +258,7 @@ void Server::init()
             quint16 port;
             udpSocket->readDatagram(datagram.data(), datagram.size(), &address, &port);
             logOutput(QString("%1##%2##%3").arg(datagram.data()).arg(address.toString()).arg(port));
-            if("##FileSender" == QString(datagram).section("##",0,0)){
+            if("FileSender" == QString(datagram).section("##",0,0)){
                 senderIP = address.toString();
                 sendPort = port;
                 QString str = QString(datagram).section("##",1,1);
@@ -276,7 +276,7 @@ void Server::init()
                     udpSocket->writeDatagram(QString("NoReceiver").toUtf8(), address, port);
                 }
             }
-            else if("##FileReceiver" == QString(datagram)){
+            else if("FileReceiver" == QString(datagram).section("##",0,0)){
                 recverIP = address.toString();
                 recvPort = port;
                 QString str = QString(datagram).section("##",1,1);

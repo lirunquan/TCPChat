@@ -1,17 +1,26 @@
 #include "receivedialog.h"
 #include "ui_receivedialog.h"
 extern QString ip_send;
+extern QString matchCode;
+
 const int N = 8;
 const int package_size = 1024;
 const int interval = 1000;
+
 bool isRecved[N];
 bool isWritten[N];
 bool isTail;
-int count_recv;
+
+QString sendHost;
+
 QByteArray recv_packages[N];
+
 QTime sumTime;
 QTime count_time_recver;
+
+int count_recv;
 int sec_recv;
+quint16 send_port;
 
 ReceiveDialog::ReceiveDialog(QWidget *parent) :
     QDialog(parent),
@@ -19,10 +28,15 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     udpRecver = new QUdpSocket(this);
+    timer = new QTimer(this);
     udpRecver->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
     udpRecver->bind(QHostAddress::LocalHost, recv_port);
+    udpRecver->writeDatagram(QString("FileReceiver##%1").arg(matchCode).toUtf8(), QHostAddress("120.78.66.220"), 7755);
     connect(udpRecver, &QUdpSocket::readyRead, this, [=](){
         readDatagrams();
+    });
+    connect(timer, &QTimer::timeout, [=](){
+        udpRecver->writeDatagram(QString("FileReceiver##%1").arg(matchCode).toUtf8(), QHostAddress("120.78.66.220"), 7755);
     });
     ui->nameLine->setText("");
     ui->sizeLine->setText("");
@@ -46,11 +60,20 @@ void ReceiveDialog::readDatagrams()
     while(udpRecver->hasPendingDatagrams()){
         QByteArray datagram;
         datagram.resize(udpRecver->pendingDatagramSize());
-        QHostAddress senderHost;
-        quint16 senderPort;
-        udpRecver->readDatagram(datagram.data(), datagram.size(), &senderHost, &senderPort);
+        QHostAddress host;
+        quint16 port;
+        udpRecver->readDatagram(datagram.data(), datagram.size(), &host, &port);
         qDebug() << datagram;
-        if("FileHead" == QString(datagram).section("##",0,0)){
+        if("GotSender" == QString(datagram).section("##",0,0)){
+            sendHost = QString(datagram).section("##",1,1);
+            send_port = QString(datagram).section("##",2,2).toInt();
+            match = true;
+        }
+        else if("NoSender" == QString(datagram)){
+            match = false;
+            timer->start(1000);
+        }
+        else if("FileHead" == QString(datagram).section("##",0,0)){
             filename = QString(datagram).section("##",1,1);
             fileSize = QString(datagram).section("##",2,2).toInt();
 
@@ -69,11 +92,11 @@ void ReceiveDialog::readDatagrams()
                 sumTime.start();
                 sec_recv = 0;
                 if(!fileRecv.open(QIODevice::WriteOnly)){
-                    udpRecver->writeDatagram("##FileSaveFailed", senderHost, senderPort);
+                    udpRecver->writeDatagram("##FileSaveFailed", QHostAddress(sendHost), send_port);
                     return;
                 }
                 else{
-                    udpRecver->writeDatagram("##FileHeadRecved", senderHost, senderPort);
+                    udpRecver->writeDatagram("##FileHeadRecved", QHostAddress(sendHost), send_port);
                     this->setGeometry(300,150,450,300);
                     ui->frame->setVisible(true);
                     ui->frame_2->setVisible(true);
@@ -87,7 +110,7 @@ void ReceiveDialog::readDatagrams()
                 }
             }
             else{
-                udpRecver->writeDatagram("##FileSaveFailed", senderHost, senderPort);
+                udpRecver->writeDatagram("##FileSaveFailed", QHostAddress(sendHost), send_port);
                 ui->label->setText("Saving file failed");
                 return;
             }
@@ -105,7 +128,7 @@ void ReceiveDialog::readDatagrams()
                             int y = buffer.section("&#&#",1,1).size();
                             recv_packages[numOfSmall] = datagram.mid(x+y+8, package_size);
                             isRecved[numOfSmall] = true;
-                            udpRecver->writeDatagram(QString("%1").arg(numOfSmall).toUtf8(), senderHost, senderPort);
+                            udpRecver->writeDatagram(QString("%1").arg(numOfSmall).toUtf8(), QHostAddress(sendHost), send_port);
                             int m=0;
                             while(isWritten[m] && m<N){
                                 m++;
@@ -142,7 +165,7 @@ void ReceiveDialog::readDatagrams()
                                 }
                             }
                             if(isTail){
-                                udpRecver->writeDatagram("##FileRecved", senderHost, senderPort);
+                                udpRecver->writeDatagram("##FileRecved", QHostAddress(sendHost), send_port);
                                 ui->progressBar->setValue(fileSize);
                                 int sum = sumTime.elapsed();
                                 int sum_s = sum/1000;
@@ -161,7 +184,7 @@ void ReceiveDialog::readDatagrams()
                             }
                         }
                         else{
-                            udpRecver->writeDatagram(QString("%1").arg(numOfSmall).toUtf8(), senderHost, senderPort);
+                            udpRecver->writeDatagram(QString("%1").arg(numOfSmall).toUtf8(), QHostAddress(sendHost), send_port);
                         }
                     }
                 }

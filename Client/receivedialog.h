@@ -7,6 +7,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QTime>
+#include <QTimer>
+
 namespace Ui {
 class ReceiveDialog;
 }
@@ -30,6 +32,8 @@ private:
     quint64 recvedSize;
     const quint16 recv_port = 7755;
     bool isFirst;
+    QTimer* timer;
+    bool match;
 };
 
 #endif // RECEIVEDIALOG_H

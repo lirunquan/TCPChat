@@ -29,6 +29,7 @@ bool isQuestionReturn, isOffline, isSet;
 
 quint16 port_num;
 QString ip_send, ip_recv;
+QString matchCode;
 QString requestString = "";
 QString m_name;
 QString recv_name;
@@ -67,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mode[0] = Chat; mode[1] = Chat;
     isOffline = true;
     port_num = 7777;
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
     timer = new QTimer();
     connect(timer, &QTimer::timeout, [=](){
         QMessageBox::information(this, "Error", "Connect Failed!", QMessageBox::Yes);
@@ -188,6 +190,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
             }
             else if("RefuseContact" == QString(buffer).section("##",1,1)){
+                matchCode.clear();
                 QMessageBox::information(this, "Refuse", "He refused contacting.");
             }
             mode[0] = Chat;
@@ -201,6 +204,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 QString c_sender = readString(QString(buffer).section("##",0,0));
                 if(QMessageBox::Yes == QMessageBox::information(this, "Contact", QString("%1 wants to send a file to you,\nDo you accept?").arg(c_sender), QMessageBox::Yes, QMessageBox::No)){
                     tcpSocket->write(QString("%1##AcceptContact##%2").arg(handledString(m_name)).arg(handledString(c_sender)).toUtf8());
+                    matchCode = QString(buffer).section("##",3,3);
                     sendOrReceiver = false;
                     ReceiveDialog* dialog = new ReceiveDialog(this);
                     dialog->show();
@@ -364,7 +368,9 @@ void MainWindow::sendMessage(QString sender, QString message, QString reciever)
 }
 void MainWindow::sendFile()
 {
-    tcpSocket->write(QString("%1##RequestForContact##%2").arg(m_name).arg(recv_name).toUtf8());
+    matchCode.clear();
+    matchCode = QString("%1").arg(qrand()%10000);
+    tcpSocket->write(QString("%1##RequestForContact##%2##%3").arg(m_name).arg(recv_name).arg(matchCode).toUtf8());
     mode[0] = Client;
 }
 void MainWindow::userLogin(QString username, QString password)
