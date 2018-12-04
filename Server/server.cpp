@@ -268,6 +268,7 @@ void Server::init()
                     if(str1 == code){
                         logOutput("correct sender");
                         udpSocket->writeDatagram(QString("GotReceiver##%1##%2").arg(recverIP).arg(recvPort).toUtf8(), QHostAddress(senderIP), sendPort);
+                        udpSocket->writeDatagram(QString("GotSender##%1##%2").arg(senderIP).arg(sendPort).toUtf8(), QHostAddress(recverIP), recvPort);
                     }
                     else{
                         code = str1;
@@ -288,6 +289,7 @@ void Server::init()
                     if(str2 == code){
                         logOutput("correct recver");
                         udpSocket->writeDatagram(QString("GotSender##%1##%2").arg(senderIP).arg(sendPort).toUtf8(), QHostAddress(recverIP), recvPort);
+                        udpSocket->writeDatagram(QString("GotReceiver##%1##%2").arg(recverIP).arg(recvPort).toUtf8(), QHostAddress(senderIP), sendPort);
                     }
                     else{
                         code = str2;

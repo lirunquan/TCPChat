@@ -68,11 +68,11 @@ void ReceiveDialog::readDatagrams()
             sendHost = QString(datagram).section("##",1,1);
             send_port = QString(datagram).section("##",2,2).toInt();
             match = true;
-            timer->stop();
+//            timer->stop();
         }
         else if("NoSender" == QString(datagram)){
             match = false;
-            timer->start(10000);
+//            timer->start(10000);
         }
         else if("FileHead" == QString(datagram).section("##",0,0)){
             filename = QString(datagram).section("##",1,1);

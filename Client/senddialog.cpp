@@ -86,11 +86,11 @@ void SendDialog::readDatagrams()
             recv_port = QString(datagram).section("##",2,2).toInt();
             match = true;
             ui->send->setEnabled(true);
-            timer->stop();
+//            timer->stop();
         }
         else if("NoReceiver" == QString(datagram)){
             match = false;
-            timer->start(out_time*10);
+//            timer->start(out_time*10);
         }
         else if("##FileHeadRecved" == QString(datagram)){
             ui->textBrowser->append("File head message arrived.");
