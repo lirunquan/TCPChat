@@ -261,17 +261,19 @@ void Server::init()
             if("FileSender" == QString(datagram).section("##",0,0)){
                 senderIP = address.toString().section(":",3,3);
                 sendPort = port;
-                QString str = QString(datagram).section("##",1,1);
+                QString str1 = QString(datagram).section("##",1,1);
+                logOutput(QString("%1 %2 %3").arg(senderIP).arg(sendPort).arg(str));
                 if(!recverIP.isEmpty()&&recvPort>=0){
-                    if(code == str){
+                    if(code == str1){
+                        logOutput("correct sender");
                         udpSocket->writeDatagram(QString("GotReceiver##%1##%2").arg(recverIP).arg(recvPort).toUtf8(), QHostAddress(senderIP), sendPort);
                     }
                     else{
-                        code = str;
+                        code = str1;
                     }
                 }
                 else{
-                    code = str;
+                    code = str1;
                     logOutput("waiting for recver");
                     udpSocket->writeDatagram(QString("NoReceiver").toUtf8(), QHostAddress(senderIP), sendPort);
                 }
@@ -279,18 +281,19 @@ void Server::init()
             else if("FileReceiver" == QString(datagram).section("##",0,0)){
                 recverIP = address.toString().section(":",3,3);
                 recvPort = port;
-                QString str = QString(datagram).section("##",1,1);
+                QString str2 = QString(datagram).section("##",1,1);
+                logOutput(QString("%1 %2 %3").arg(recverIP).arg(recvPort).arg(str));
                 if(!senderIP.isEmpty()&&recvPort>=0){
-                    if(str == code){
+                    if(str2 == code){
                         logOutput("correct recver");
                         udpSocket->writeDatagram(QString("GotSender##%1##%2").arg(senderIP).arg(sendPort).toUtf8(), QHostAddress(recverIP), recvPort);
                     }
                     else{
-                        code = str;
+                        code = str2;
                     }
                 }
                 else{
-                    code = str;
+                    code = str2;
                     logOutput("waiting for sender.");
                     udpSocket->writeDatagram(QString("NoSender").toUtf8(), QHostAddress(recverIP), recvPort);
                 }
