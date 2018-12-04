@@ -259,7 +259,7 @@ void Server::init()
             udpSocket->readDatagram(datagram.data(), datagram.size(), &address, &port);
             logOutput(QString("%1##%2##%3").arg(datagram.data()).arg(address.toString()).arg(port));
             if("FileSender" == QString(datagram).section("##",0,0)){
-                senderIP = address.toString();
+                senderIP = address.toString().section(":",3,3);
                 sendPort = port;
                 QString str = QString(datagram).section("##",1,1);
                 if(!recverIP.isEmpty()&&recvPort>=0){
@@ -277,7 +277,7 @@ void Server::init()
                 }
             }
             else if("FileReceiver" == QString(datagram).section("##",0,0)){
-                recverIP = address.toString();
+                recverIP = address.toString().section(":",3,3);
                 recvPort = port;
                 QString str = QString(datagram).section("##",1,1);
                 if(!senderIP.isEmpty()&&recvPort>=0){
