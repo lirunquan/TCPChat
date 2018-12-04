@@ -262,7 +262,7 @@ void Server::init()
                 senderIP = address.toString().section(":",3,3);
                 sendPort = port;
                 QString str1 = QString(datagram).section("##",1,1);
-                logOutput(QString("%1 %2 %3").arg(senderIP).arg(sendPort).arg(str));
+                logOutput(QString("%1 %2 %3").arg(senderIP).arg(sendPort).arg(str1));
                 if(!recverIP.isEmpty()&&recvPort>=0){
                     if(code == str1){
                         logOutput("correct sender");
@@ -282,7 +282,7 @@ void Server::init()
                 recverIP = address.toString().section(":",3,3);
                 recvPort = port;
                 QString str2 = QString(datagram).section("##",1,1);
-                logOutput(QString("%1 %2 %3").arg(recverIP).arg(recvPort).arg(str));
+                logOutput(QString("%1 %2 %3").arg(recverIP).arg(recvPort).arg(str2));
                 if(!senderIP.isEmpty()&&recvPort>=0){
                     if(str2 == code){
                         logOutput("correct recver");
