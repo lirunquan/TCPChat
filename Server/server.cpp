@@ -22,6 +22,12 @@ enum{
 };
 int indexOf;
 
+QString senderIP = "";
+QString recverIP = "";
+int sendPort = -1;
+int recvPort = -1;
+QString code = "";
+
 Server::Server(QObject *parent) : QObject(parent)
 {
 }
@@ -245,12 +251,7 @@ void Server::init()
     });
     udpSocket = new QUdpSocket(this);
     udpSocket->bind(7755);
-    QString senderIP = "";
-    QString recverIP = "";
-    int sendPort = -1;
-    int recvPort = -1;
-    QString code = "";
-    connect(udpSocket, &QUdpSocket::readyRead, [&](){
+    connect(udpSocket, &QUdpSocket::readyRead, [=](){
         while(udpSocket->hasPendingDatagrams()){
             QByteArray datagram;
             datagram.resize(udpSocket->pendingDatagramSize());
@@ -263,8 +264,8 @@ void Server::init()
                 sendPort = port;
                 QString str1 = QString(datagram).section("##",1,1);
                 logOutput(QString("%1 %2 %3").arg(senderIP).arg(sendPort).arg(str1));
-                if(!recverIP.isEmpty()&&recvPort>=0){
-                    if(code == str1){
+                if(!recverIP.isEmpty()&&recvPort>=0&&!code.isEmpty()){
+                    if(str1 == code){
                         logOutput("correct sender");
                         udpSocket->writeDatagram(QString("GotReceiver##%1##%2").arg(recverIP).arg(recvPort).toUtf8(), QHostAddress(senderIP), sendPort);
                     }
@@ -283,7 +284,7 @@ void Server::init()
                 recvPort = port;
                 QString str2 = QString(datagram).section("##",1,1);
                 logOutput(QString("%1 %2 %3").arg(recverIP).arg(recvPort).arg(str2));
-                if(!senderIP.isEmpty()&&recvPort>=0){
+                if(!senderIP.isEmpty()&&recvPort>=0&&!code.isEmpty()){
                     if(str2 == code){
                         logOutput("correct recver");
                         udpSocket->writeDatagram(QString("GotSender##%1##%2").arg(senderIP).arg(sendPort).toUtf8(), QHostAddress(recverIP), recvPort);
