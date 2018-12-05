@@ -37,7 +37,7 @@ SendDialog::SendDialog(QWidget *parent) :
     ui->nameLine->setReadOnly(true);
     ui->sizeLine->setReadOnly(true);
     udpSender->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
-    udpSender->bind(7755);
+    udpSender->bind(7755, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint);
     match = false;
     udpSender->writeDatagram(QString("FileSender##%1").arg(matchCode).toUtf8(), QHostAddress("120.78.66.220"), 7755);
     connect(udpSender, &QUdpSocket::readyRead, this, [=](){

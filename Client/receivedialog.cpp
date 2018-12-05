@@ -29,8 +29,9 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
     ui->setupUi(this);
     udpRecver = new QUdpSocket(this);
     timer = new QTimer(this);
+    match = false;
     udpRecver->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 1024*1024*100);
-    udpRecver->bind(QHostAddress::LocalHost, recv_port);
+    udpRecver->bind(recv_port, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint);
     udpRecver->writeDatagram(QString("FileReceiver##%1").arg(matchCode).toUtf8(), QHostAddress("120.78.66.220"), 7755);
     connect(udpRecver, &QUdpSocket::readyRead, this, [=](){
         readDatagrams();
@@ -38,6 +39,7 @@ ReceiveDialog::ReceiveDialog(QWidget *parent) :
     connect(timer, &QTimer::timeout, [=](){
         udpRecver->writeDatagram(QString("FileReceiver##%1").arg(matchCode).toUtf8(), QHostAddress("120.78.66.220"), 7755);
     });
+    timer->start(1000);
     ui->nameLine->setText("");
     ui->sizeLine->setText("");
     ui->progressBar->setValue(0);
@@ -68,7 +70,7 @@ void ReceiveDialog::readDatagrams()
             sendHost = QString(datagram).section("##",1,1);
             send_port = QString(datagram).section("##",2,2).toInt();
             match = true;
-//            timer->stop();
+            timer->stop();
         }
         else if("NoSender" == QString(datagram)){
             match = false;
