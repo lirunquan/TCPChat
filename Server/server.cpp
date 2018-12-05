@@ -250,7 +250,7 @@ void Server::init()
         });
     });
     udpSocket = new QUdpSocket(this);
-    udpSocket->bind(7755);
+    udpSocket->bind(7755, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint);
     connect(udpSocket, &QUdpSocket::readyRead, [=](){
         while(udpSocket->hasPendingDatagrams()){
             QByteArray datagram;
